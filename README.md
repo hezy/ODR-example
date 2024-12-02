@@ -60,6 +60,6 @@ P-value: 0.088346
 ```
 These results will be saved as a text file. Three figures will also be saved, showing the data points with error bars and the best-fit line, residuals plot, and parameter correlation ellipses for the 1σ, 2σ, and 3σ confidence levels.
 
-![fit-plot](https://github.com/hezy/ODR-example/blob/main/fit-plot.png?raw=true)
-![residuals-plot](https://github.com/hezy/ODR-example/blob/main/residuals-plot.png?raw=true)
-![correlation-ellipses](https://github.com/hezy/ODR-example/blob/main/correlation-ellipses.png?raw=true)
+![fit plot](https://github.com/hezy/ODR-example/blob/main/fit_plot.png?raw=true)
+![residuals plot](https://github.com/hezy/ODR-example/blob/main/residuals_plot.png?raw=true)
+![correlation ellipses](https://github.com/hezy/ODR-example/blob/main/correlation_ellipses.png?raw=true)
