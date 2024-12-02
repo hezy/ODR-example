@@ -1,0 +1,9 @@
+Regression Results:
+-----------------
+Slope: 2.277464 ± 0.022014
+Intercept: -0.592683 ± 0.182644
+
+Correlation coefficient: -0.542123
+Chi-square: 20.284218
+Reduced chi-square: 1.560324
+P-value: 0.088346

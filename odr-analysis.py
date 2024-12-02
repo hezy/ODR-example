@@ -62,80 +62,102 @@ def perform_odr(x, dx, y, dy):
     results = odr_obj.run()
 
     n = len(x)
-    p = 2  # number of parameters
+    p = 2
     chi_square = results.sum_square
     chi_square_reduced = chi_square / (n - p)
-
     p_value = 1 - stats.chi2.cdf(chi_square, n - p)
 
     return results, chi_square, chi_square_reduced, p_value
 
 
-def plot_results(x, dx, y, dy, results):
-    """Create plots for data, fit, residuals, and correlation ellipse"""
-    fig = plt.figure(figsize=(15, 15))
-    gs = plt.GridSpec(3, 2, height_ratios=[2, 1, 2])
+def plot_fit(x, dx, y, dy, results, save_path):
+    """Create and save fit plot"""
+    fig = plt.figure(figsize=(10, 8))
 
-    # Data and fit plot
-    ax1 = fig.add_subplot(gs[0, :])
-    ax1.errorbar(x, y, xerr=dx, yerr=dy, fmt="o", label="Data")
+    # Determine if error bars are visible
+    median_dx = np.median(dx)
+    median_dy = np.median(dy)
+    x_range = np.max(x) - np.min(x)
+    y_range = np.max(y) - np.min(y)
+
+    use_points = (median_dx / x_range < 0.01) and (median_dy / y_range < 0.01)
+    marker = "o" if use_points else "none"
+
+    plt.errorbar(x, y, xerr=dx, yerr=dy, fmt=marker, label="Data")
 
     x_fit = np.linspace(min(x), max(x), 100)
     y_fit = linear_func(results.beta, x_fit)
+    plt.plot(x_fit, y_fit, "r-", label="Fit")
 
-    ax1.plot(x_fit, y_fit, "r-", label="Fit")
-    ax1.set_xlabel("X")
-    ax1.set_ylabel("Y")
-    ax1.set_title("ODR Fit with Uncertainties")
-    ax1.legend()
-    ax1.grid(True)
+    plt.xlabel("X")
+    plt.ylabel("Y")
+    plt.title("ODR Fit with Uncertainties")
+    plt.legend()
+    plt.grid(True)
 
-    # Residuals plot
-    ax2 = fig.add_subplot(gs[1, :])
+    plt.savefig(save_path)
+    plt.close()
+
+
+def plot_residuals(x, dx, y, dy, results, save_path):
+    """Create and save residuals plot"""
+    fig = plt.figure(figsize=(10, 6))
+
     y_model = linear_func(results.beta, x)
     residuals = y - y_model
-
     total_uncertainty = np.sqrt(dy**2 + (results.beta[0] * dx) ** 2)
 
-    ax2.errorbar(x, residuals, yerr=total_uncertainty, fmt="o")
-    ax2.axhline(y=0, color="r", linestyle="-")
-    ax2.set_xlabel("X")
-    ax2.set_ylabel("Residuals")
-    ax2.set_title("Residuals")
-    ax2.grid(True)
+    # Determine if error bars are visible
+    median_uncert = np.median(total_uncertainty)
+    resid_range = np.max(residuals) - np.min(residuals)
+    use_points = median_uncert / resid_range < 0.01
+    marker = "o" if use_points else "none"
 
-    # Correlation ellipse plot
-    ax3 = fig.add_subplot(gs[2, :])
+    plt.errorbar(x, residuals, yerr=total_uncertainty, fmt=marker)
+    plt.axhline(y=0, color="r", linestyle="-")
+    plt.xlabel("X")
+    plt.ylabel("Residuals")
+    plt.title("Residuals")
+    plt.grid(True)
+
+    plt.savefig(save_path)
+    plt.close()
+
+
+def plot_ellipses(results, save_path):
+    """Create and save correlation ellipse plot"""
+    fig = plt.figure(figsize=(10, 8))
+    ax = plt.gca()
 
     confidence_data = [
-        (2.30, 39.4, "red"),  # 1σ
-        (6.18, 86.5, "green"),  # 2σ
-        (11.83, 98.9, "blue"),  # 3σ
+        (2.30, "1σ", "red"),
+        (6.18, "2σ", "green"),
+        (11.83, "3σ", "blue"),
     ]
 
-    for chi2_val, conf_level, color in confidence_data:
+    for chi2_val, label, color in confidence_data:
         confidence_ellipse(
             results.beta,
             results.cov_beta,
-            ax3,
+            ax,
             n_std=np.sqrt(chi2_val),
             alpha=0.25,
             color=color,
-            label=f"{conf_level:.1f}% confidence region",
+            label=label,
         )
 
-    ax3.plot(
+    ax.plot(
         results.beta[0], results.beta[1], "r*", label="Best fit", markersize=10
     )
 
-    ax3.set_xlabel("Slope (m)")
-    ax3.set_ylabel("Intercept (b)")
-    ax3.set_title("Parameter Correlation Ellipses (2D confidence regions)")
-    ax3.legend()
-    ax3.grid(True)
+    plt.xlabel("Slope (m)")
+    plt.ylabel("Intercept (b)")
+    plt.title("Parameter Correlation Ellipses")
+    plt.legend()
+    plt.grid(True)
 
-    plt.tight_layout()
-    return fig
+    plt.savefig(save_path)
+    plt.close()
 
 
 def main(filename):
@@ -145,24 +167,29 @@ def main(filename):
         return
 
     x, dx, y, dy = data
-
     results, chi_square, chi_square_reduced, p_value = perform_odr(x, dx, y, dy)
 
-    print("\nRegression Results:")
-    print("-----------------")
-    print(f"Slope: {results.beta[0]:.6f} ± {results.sd_beta[0]:.6f}")
-    print(f"Intercept: {results.beta[1]:.6f} ± {results.sd_beta[1]:.6f}")
-    print(
-        f"\nCorrelation coefficient: {results.cov_beta[0,1] / (results.sd_beta[0] * results.sd_beta[1]):.6f}"
-    )
-    print(f"Chi-square: {chi_square:.6f}")
-    print(f"Reduced chi-square: {chi_square_reduced:.6f}")
-    print(f"P-value: {p_value:.6f}")
+    # Save results to text file
+    with open("fit_results.txt", "w") as f:
+        f.write("Regression Results:\n")
+        f.write("-----------------\n")
+        f.write(f"Slope: {results.beta[0]:.6f} ± {results.sd_beta[0]:.6f}\n")
+        f.write(
+            f"Intercept: {results.beta[1]:.6f} ± {results.sd_beta[1]:.6f}\n"
+        )
+        f.write(
+            f"\nCorrelation coefficient: {results.cov_beta[0,1] / (results.sd_beta[0] * results.sd_beta[1]):.6f}\n"
+        )
+        f.write(f"Chi-square: {chi_square:.6f}\n")
+        f.write(f"Reduced chi-square: {chi_square_reduced:.6f}\n")
+        f.write(f"P-value: {p_value:.6f}\n")
 
-    fig = plot_results(x, dx, y, dy, results)
-    plt.show()
+    # Create and save plots
+    plot_fit(x, dx, y, dy, results, "fit_plot.png")
+    plot_residuals(x, dx, y, dy, results, "residuals_plot.png")
+    plot_ellipses(results, "correlation_ellipses.png")
 
 
 if __name__ == "__main__":
-    filename = "data.csv"
+    filename = "your_data.csv"
     main(filename)
