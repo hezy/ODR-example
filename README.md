@@ -42,20 +42,20 @@ This Python script performs Orthogonal Distance Regression (ODR) on data with un
 
 ## Example
 
-An example CSV file (`data.csv`) is provided with the script. The data represents measurements with uncertainties in both x and y variables.
+An example CSV file (`data.csv`) is provided with the script that produced it (`generate-fake-data.py`). The data represents measurements with uncertainties in both x and y variables.
 
-Running the script with the example data will produce the following output:
+Running the script with the provided example data will produce the following output:
 
 ```
 Regression Results:
 -----------------
-Slope: 1.234567 ± 0.054321
-Intercept: 0.987654 ± 0.112233
+Slope: 2.277464 ± 0.022014
+Intercept: -0.592683 ± 0.182644
 
-Correlation coefficient: 0.876543
-Chi-square: 12.345678
-Reduced chi-square: 0.987654
-P-value: 0.123456
+Correlation coefficient: -0.542123
+Chi-square: 20.284218
+Reduced chi-square: 1.560324
+P-value: 0.088346
+   
 ```
-
-A figure will also be displayed, showing the data points with error bars, the best-fit line, residuals plot, and parameter correlation ellipses for the 1σ, 2σ, and 3σ confidence levels.
+The figures will also be saved, showing the data points with error bars, the best-fit line, residuals plot, and parameter correlation ellipses for the 1σ, 2σ, and 3σ confidence levels.
