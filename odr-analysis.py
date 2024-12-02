@@ -54,6 +54,30 @@ def confidence_ellipse(mean, cov, ax, n_std=1.0, **kwargs):
     return ax.add_patch(ellipse)
 
 
+def format_matrix(matrix):
+    # Convert matrix to numpy array if it isn't already
+    matrix = np.asarray(matrix)
+
+    # Format each element with scientific notation
+    formatted_elements = [
+        [f"{element:1.6e}" for element in row] for row in matrix
+    ]
+
+    # Get maximum width for alignment
+    width = max(
+        len(str(element)) for row in formatted_elements for element in row
+    )
+
+    # Create formatted rows
+    formatted_rows = [
+        " ".join(f"{element:>{width}}" for element in row)
+        for row in formatted_elements
+    ]
+
+    # Return the full string with newlines
+    return "\n".join(formatted_rows)
+
+
 def perform_odr(x, dx, y, dy):
     """Perform ODR analysis"""
     linear = odr.Model(linear_func)
@@ -178,10 +202,12 @@ def main(filename):
         f.write(
             f"Intercept: {results.beta[1]:.6f} ± {results.sd_beta[1]:.6f}\n"
         )
+        f.write(f"\nCovariance matrix:")
+        f.write(f"\n{format_matrix(results.cov_beta)}")
         f.write(
-            f"\nCorrelation coefficient: {results.cov_beta[0,1] / (results.sd_beta[0] * results.sd_beta[1]):.6f}\n"
+            f"\nPearson's Correlation coefficient: {results.cov_beta[0,1] / (results.sd_beta[0] * results.sd_beta[1]):.6f}\n"
         )
-        f.write(f"Chi-square: {chi_square:.6f}\n")
+        f.write(f"\nChi-square: {chi_square:.6f}\n")
         f.write(f"Deegres of freedom: {deegres_freedom}\n")
         f.write(f"Reduced chi-square: {chi_square_reduced:.6f}\n")
         f.write(f"P-value: {p_value:.6f}\n")

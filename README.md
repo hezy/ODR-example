@@ -52,12 +52,15 @@ Regression Results:
 Slope: 2.277464 ± 0.022014
 Intercept: -0.592683 ± 0.182644
 
-Correlation coefficient: -0.542123
+Covariance matrix:
+ 3.105763e-04 -2.179691e-03
+-2.179691e-03  2.137945e-02
+Pearson's Correlation coefficient: -0.542123
+
 Chi-square: 20.284218
 Deegres of freedom: 13
 Reduced chi-square: 1.560324
 P-value: 0.088346
-   
 ```
 These results will be saved as a text file. Three figures will also be saved, showing the data points with error bars and the best-fit line, residuals plot, and parameter correlation ellipses for the 1σ, 2σ, and 3σ confidence levels.
 
