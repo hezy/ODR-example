@@ -58,4 +58,4 @@ Reduced chi-square: 1.560324
 P-value: 0.088346
    
 ```
-The figures will also be saved, showing the data points with error bars, the best-fit line, residuals plot, and parameter correlation ellipses for the 1σ, 2σ, and 3σ confidence levels.
+These results will be saved as a text file. Three figures will also be saved, showing the data points with error bars and the best-fit line, residuals plot, and parameter correlation ellipses for the 1σ, 2σ, and 3σ confidence levels.
