@@ -33,15 +33,15 @@ This Python script performs Orthogonal Distance Regression (ODR) on data with un
 
 3. Run the script:
    ```
-   python odr_fit.py [data.csv]
+   python odr-fit.py [data.csv]
    ```
 
-4. The script will read the data from the CSV file, perform the ODR analysis, and save the regression results in a file `fit_results`
+4. The script will read the data from the CSV file, perform the ODR analysis, and save the regression results in a file `fit_results.txt`
 
 5. Three figures will be saved as files:
 * `fit_plot.png` - the data points with best-fit line
-* `residuals_plots` - the differences between observed y's to fitted y's
-* `correlation_ellipses` - fitted parameters correlation ellipsesi
+* `residuals_plots.png` - the differences between observed y's to fitted y's
+* `correlation_ellipses.png` - fitted parameters correlation ellipsesi
 
 ## Example
 
