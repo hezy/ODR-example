@@ -5,6 +5,7 @@ from scipy import stats
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 import matplotlib.transforms as transforms
+import sys
 
 
 def linear_func(p, x):
@@ -182,18 +183,6 @@ def plot_ellipses(results, save_path):
     plt.savefig(save_path)
     plt.close()
 
-
-def main(filename):
-    """Main function to run the analysis"""
-    data = read_data(filename)
-    if data is None:
-        return
-
-    x, dx, y, dy = data
-    results, chi_square, deegres_freedom, chi_square_reduced, p_value = (
-        perform_odr(x, dx, y, dy)
-    )
-
     # Save results to text file
     with open("fit_results.txt", "w") as f:
         f.write("Regression Results:\n")
@@ -218,6 +207,29 @@ def main(filename):
     plot_ellipses(results, "correlation_ellipses.png")
 
 
+def main():
+    """Main function to run the analysis"""
+
+    default_input = "data.csv"
+
+    if len(sys.argv) == 1:
+        input_file = default_input
+    elif len(sys.argv) == 2:
+        input_file = sys.argv[1]
+    else:
+        print("Usage: odr-analysis [input_file.csv]")
+        print(f"Default input file: {default_input}")
+        sys.exit(1)
+
+    data = read_data(input_file)
+    if data is None:
+        return
+
+    x, dx, y, dy = data
+    results, chi_square, deegres_freedom, chi_square_reduced, p_value = (
+        perform_odr(x, dx, y, dy)
+    )
+
+
 if __name__ == "__main__":
-    filename = "your_data.csv"
-    main(filename)
+    main()

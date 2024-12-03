@@ -9,7 +9,7 @@ dy = 0.15 + 0.1 * np.random.rand(15)
 
 # Save to CSV
 np.savetxt(
-    "your_data.csv",
+    "data.csv",
     np.column_stack([x, dx, y, dy]),
     delimiter=",",
     header="x,dx,y,dy",
