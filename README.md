@@ -21,6 +21,11 @@ This Python script performs Orthogonal Distance Regression (ODR) on data with un
 - SciPy
 - Matplotlib
 
+## Installation
+
+Clone this repository, and install the dependencies.
+Detailed installation guide for beginners here:
+https://github.com/hezy/ODR-example/blob/main/Installation_Guide.md
 
 ## Usage
 
