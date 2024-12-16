@@ -8,12 +8,6 @@ import matplotlib.transforms as transforms
 import sys
 
 
-def linear_func(p, x):
-    """Linear function for ODR fitting: y = mx + b"""
-    m, b = p
-    return m * x + b
-
-
 def read_data(filename):
     """Read data from CSV file"""
     try:
@@ -28,55 +22,10 @@ def read_data(filename):
         return None
 
 
-def confidence_ellipse(mean, cov, ax, n_std=1.0, **kwargs):
-    """
-    Create a plot of the covariance confidence ellipse of parameters m and b.
-    """
-    pearson = cov[0, 1] / np.sqrt(cov[0, 0] * cov[1, 1])
-
-    ell_radius_x = np.sqrt(1 + pearson)
-    ell_radius_y = np.sqrt(1 - pearson)
-
-    ellipse = Ellipse(
-        (0, 0), width=ell_radius_x * 2, height=ell_radius_y * 2, **kwargs
-    )
-
-    scale_x = np.sqrt(cov[0, 0]) * n_std
-    scale_y = np.sqrt(cov[1, 1]) * n_std
-
-    transf = (
-        transforms.Affine2D()
-        .rotate_deg(45)
-        .scale(scale_x, scale_y)
-        .translate(mean[0], mean[1])
-    )
-
-    ellipse.set_transform(transf + ax.transData)
-    return ax.add_patch(ellipse)
-
-
-def format_matrix(matrix):
-    # Convert matrix to numpy array if it isn't already
-    matrix = np.asarray(matrix)
-
-    # Format each element with scientific notation
-    formatted_elements = [
-        [f"{element:1.6e}" for element in row] for row in matrix
-    ]
-
-    # Get maximum width for alignment
-    width = max(
-        len(str(element)) for row in formatted_elements for element in row
-    )
-
-    # Create formatted rows
-    formatted_rows = [
-        " ".join(f"{element:>{width}}" for element in row)
-        for row in formatted_elements
-    ]
-
-    # Return the full string with newlines
-    return "\n".join(formatted_rows)
+def linear_func(p, x):
+    """Linear function for ODR fitting: y = mx + b"""
+    m, b = p
+    return m * x + b
 
 
 def perform_odr(x, dx, y, dy):
@@ -146,6 +95,57 @@ def plot_residuals(x, dx, y, dy, results, save_path):
 
     plt.savefig(save_path)
     plt.close()
+
+
+def confidence_ellipse(mean, cov, ax, n_std=1.0, **kwargs):
+    """
+    Create a plot of the covariance confidence ellipse of parameters m and b.
+    """
+    pearson = cov[0, 1] / np.sqrt(cov[0, 0] * cov[1, 1])
+
+    ell_radius_x = np.sqrt(1 + pearson)
+    ell_radius_y = np.sqrt(1 - pearson)
+
+    ellipse = Ellipse(
+        (0, 0), width=ell_radius_x * 2, height=ell_radius_y * 2, **kwargs
+    )
+
+    scale_x = np.sqrt(cov[0, 0]) * n_std
+    scale_y = np.sqrt(cov[1, 1]) * n_std
+
+    transf = (
+        transforms.Affine2D()
+        .rotate_deg(45)
+        .scale(scale_x, scale_y)
+        .translate(mean[0], mean[1])
+    )
+
+    ellipse.set_transform(transf + ax.transData)
+    return ax.add_patch(ellipse)
+
+
+def format_matrix(matrix):
+    # Convert matrix to numpy array if it isn't already
+    matrix = np.asarray(matrix)
+
+    # Format each element with scientific notation
+    formatted_elements = [
+        [f"{element:1.6e}" for element in row] for row in matrix
+    ]
+
+    # Get maximum width for alignment
+    width = max(
+        len(str(element)) for row in formatted_elements for element in row
+    )
+
+    # Create formatted rows
+    formatted_rows = [
+        " ".join(f"{element:>{width}}" for element in row)
+        for row in formatted_elements
+    ]
+
+    # Return the full string with newlines
+    return "\n".join(formatted_rows)
 
 
 def plot_ellipses(results, save_path):
