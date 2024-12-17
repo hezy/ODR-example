@@ -1,15 +1,22 @@
+"""odr-fit.py performs ODR fit on data with uncertainties in both the x and y.
+
+It reads data from a CSV file, performs the Orthogonal Distance Regression
+(ODR) analysis, and creates plots for the data with fit, residuals, and
+parameter correlation ellipses.
+"""
+
+import sys
+
+import matplotlib.pyplot as plt
+import matplotlib.transforms as transforms
 import numpy as np
 import pandas as pd
-from scipy import odr
-from scipy import stats
-import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
-import matplotlib.transforms as transforms
-import sys
+from scipy import odr, stats
 
 
 def read_data(filename):
-    """Read data from CSV file"""
+    """Read data from CSV file."""
     try:
         df = pd.read_csv(filename)
         x = df["x"].values
@@ -202,8 +209,10 @@ def main():
         return
 
     x, dx, y, dy = data
-    results, chi_square, degrees_freedom, chi_square_reduced, p_value = perform_odr(x, dx, y, dy)
-    
+    results, chi_square, degrees_freedom, chi_square_reduced, p_value = (
+        perform_odr(x, dx, y, dy)
+    )
+
     # Create and save plots
     plot_fit(x, dx, y, dy, results, "fit_plot.png")
     plot_residuals(x, dx, y, dy, results, "residuals_plot.png")
@@ -214,10 +223,14 @@ def main():
         f.write("Regression Results:\n")
         f.write("-----------------\n")
         f.write(f"Slope: {results.beta[0]:.6f} ± {results.sd_beta[0]:.6f}\n")
-        f.write(f"Intercept: {results.beta[1]:.6f} ± {results.sd_beta[1]:.6f}\n")
+        f.write(
+            f"Intercept: {results.beta[1]:.6f} ± {results.sd_beta[1]:.6f}\n"
+        )
         f.write(f"\nCovariance matrix:")
         f.write(f"\n{format_matrix(results.cov_beta)}")
-        f.write(f"\nPearson's Correlation coefficient: {results.cov_beta[0,1] / (results.sd_beta[0] * results.sd_beta[1]):.6f}\n")
+        f.write(
+            f"\nPearson's Correlation coefficient: {results.cov_beta[0,1] / (results.sd_beta[0] * results.sd_beta[1]):.6f}\n"
+        )
         f.write(f"\nChi-square: {chi_square:.6f}\n")
         f.write(f"Degrees of freedom: {degrees_freedom}\n")
         f.write(f"Reduced chi-square: {chi_square_reduced:.6f}\n")
