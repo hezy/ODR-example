@@ -38,7 +38,7 @@ https://github.com/hezy/ODR-example/blob/main/Installation_Guide.md
 2. Run the script:
    ```
    python odr-fit.py data.csv
-(change to your file name)   ```
+(change to your file name)
 
 3. The script will read the data from the CSV file, perform the ODR analysis, and save the regression results in a file `fit_results.txt`
 
