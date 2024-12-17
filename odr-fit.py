@@ -122,7 +122,7 @@ def perform_odr(x, dx, y, dy):
 
 
 def plot_fit(x, dx, y, dy, results, save_path):
-    """Create and save a plot of data points with error bars and their corresponding fit line.
+    """Create and save a plot of data points with error bars and fit line.
 
     Parameters
     ----------
@@ -141,16 +141,13 @@ def plot_fit(x, dx, y, dy, results, save_path):
 
     Notes
     -----
-    - Automatically switches between point markers and error bars only, based on the
-      relative size of uncertainties compared to data range
+    - Automatically switches between point markers and error bars only, based on
+    the relative size of uncertainties compared to data range
     - Uses error bars when median uncertainty > 1% of data range
     - Generates fit line using 100 evenly spaced points
     - Creates a 10x8 inch figure with grid
+    - Saves plot and closes figure after completion
 
-    Returns
-    -------
-    None
-        The plot is saved to the specified path and the figure is closed
     """
     fig = plt.figure(figsize=(10, 8))
 
