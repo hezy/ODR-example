@@ -177,7 +177,41 @@ def plot_fit(x, dx, y, dy, results, save_path):
 
 
 def plot_residuals(x, dx, y, dy, results, save_path):
-    """Create and save residuals plot"""
+    """Generate and save residuals plot for a linear fit with uncertainties.
+
+    Creates a figure showing the difference between observed and model values,
+    including total uncertainty from both y and x errors. Automatically adjusts
+    the plot style based on the relative size of error bars.
+
+    Parameters
+    ----------
+    x : array-like
+        Independent variable values
+    dx : array-like
+        Uncertainties in x values
+    y : array-like
+        Dependent variable values (observations)
+    dy : array-like
+        Uncertainties in y values
+    results : object
+        Fit results containing at least:
+            - beta: array-like with [slope, intercept]
+    save_path : str or Path
+        Output path where the plot will be saved
+
+    Notes
+    -----
+    - Total uncertainty combines y errors (dy) and propagated x errors
+    - Points are shown only if median uncertainty is < 1% of residual range
+    - Plot includes a red horizontal line at y=0 for reference
+    - Figure is automatically closed after saving
+
+    The plot shows:
+    - Residuals (y - model) vs x
+    - Error bars showing combined uncertainty
+    - Grid for better readability
+
+    """
     fig = plt.figure(figsize=(10, 6))
 
     y_model = linear_func(results.beta, x)
@@ -202,8 +236,37 @@ def plot_residuals(x, dx, y, dy, results, save_path):
 
 
 def confidence_ellipse(mean, cov, ax, n_std=1.0, **kwargs):
-    """
-    Create a plot of the covariance confidence ellipse of parameters m and b.
+    """Plots a confidence ellipse representing a bivariate normal distribution.
+
+    This function creates an ellipse that visualizes the covariance structure and mean
+    of a 2D normally distributed dataset. The ellipse's size represents the confidence
+    interval determined by n_std standard deviations.
+
+    Parameters
+    ----------
+    mean : array-like, shape (2,)
+        The center point (mean) of the ellipse in format [x, y]
+    cov : array-like, shape (2, 2)
+        The 2x2 covariance matrix of the distribution
+    ax : matplotlib.axes.Axes
+        The axes object to draw the ellipse on
+    n_std : float, optional (default=1.0)
+        The number of standard deviations determining the ellipse's size
+    **kwargs : dict
+        Additional keyword arguments passed to matplotlib.patches.Ellipse
+
+    Returns
+    -------
+    matplotlib.patches.Ellipse
+        The added ellipse patch object
+
+    Notes
+    -----
+    The ellipse is first created at (0,0) with initial radii, then transformed using:
+    1. 45-degree rotation to align with correlation direction
+    2. Scaling according to covariance values and desired confidence level
+    3. Translation to the specified mean position
+
     """
     pearson = cov[0, 1] / np.sqrt(cov[0, 0] * cov[1, 1])
 
@@ -229,7 +292,33 @@ def confidence_ellipse(mean, cov, ax, n_std=1.0, **kwargs):
 
 
 def format_matrix(matrix):
-    # Convert matrix to numpy array if it isn't already
+    """Convert a matrix into a neatly formatted string representation.
+
+    Converts each element to scientific notation with 6 decimal places and
+    aligns columns for readability.
+
+    Parameters
+    ----------
+    matrix : array-like
+        Input 2D matrix that can be converted to a NumPy array.
+
+    Returns
+    -------
+    str
+        String representation of the matrix where:
+        - Each element is in scientific notation (1.234567e+00 format)
+        - Elements are right-aligned within columns
+        - Rows are separated by newlines
+        - Columns are separated by single spaces
+
+    Examples
+    --------
+    >>> m = [[1, 2], [3000, 4000]]
+    >>> print(format_matrix(m))
+    1.000000e+00 2.000000e+00
+    3.000000e+03 4.000000e+03
+
+    """
     matrix = np.asarray(matrix)
 
     # Format each element with scientific notation
@@ -253,14 +342,47 @@ def format_matrix(matrix):
 
 
 def plot_ellipses(results, save_path):
+    """Create and save a plot showing parameter correlation ellipses at different confidence levels.
+
+    This function generates a figure showing confidence ellipses for the
+    correlation between slope and intercept parameters, typically from a linear
+    regression fit. The ellipses are drawn at 1σ, 2σ, and 3σ confidence levels
+    using chi-squared values for 2 degrees of freedom.
+
+    Parameters
+    ----------
+    results : object
+        Results object containing:
+        - beta : array-like, shape (2,)
+            Best-fit parameters [slope, intercept]
+        - cov_beta : array-like, shape (2, 2)
+            Covariance matrix for the parameters
+
+    save_path : str
+        File path where the generated plot should be saved
+
+    Notes
+    -----
+    The confidence levels correspond to the following chi-squared values:
+    - 1σ: χ² = 2.30 (68.27% confidence)
+    - 2σ: χ² = 6.18 (95.45% confidence)
+    - 3σ: χ² = 11.83 (99.73% confidence)
+
+    The best-fit point is marked with a red star on the plot.
+
+    The function closes the plot after saving to free memory.
+    """
+
+
+def plot_ellipses(results, save_path):
     """Create and save correlation ellipse plot"""
     fig = plt.figure(figsize=(10, 8))
     ax = plt.gca()
 
     confidence_data = [
-        (2.30, "1σ", "red"),
-        (6.18, "2σ", "green"),
-        (11.83, "3σ", "blue"),
+        (2.30, "1σ (39.3%)", "red"),
+        (6.18, "2σ (95.4%)", "green"),
+        (11.83, "3σ (99.7%)", "blue"),
     ]
 
     for chi2_val, label, color in confidence_data:
@@ -289,7 +411,33 @@ def plot_ellipses(results, save_path):
 
 
 def main():
-    """Main function to run the analysis"""
+    """Run orthogonal distance regression analysis on input data and generate outputs.
+
+    This function performs the following operations:
+    1. Handles command-line arguments for input file selection
+    2. Reads data from the specified CSV file
+    3. Performs orthogonal distance regression (ODR)
+    4. Generates three plots: fit visualization, residuals, and correlation ellipses
+    5. Saves detailed regression results to a text file
+
+    Command-line Usage:
+        python script.py [input_file.csv]
+
+    Input File Format:
+        Expected CSV file with columns containing x values, x uncertainties,
+        y values, and y uncertainties.
+
+    Generated Files:
+        - fit_plot.png: Visualization of data points and fitted line
+        - residuals_plot.png: Plot of fit residuals
+        - correlation_ellipses.png: Parameter correlation visualization
+        - fit_results.txt: Detailed regression results including:
+            * Slope and intercept with uncertainties
+            * Covariance matrix
+            * Pearson's correlation coefficient
+            * Chi-square statistics and p-value
+
+    """
     default_input = "data.csv"
 
     if len(sys.argv) == 1:
