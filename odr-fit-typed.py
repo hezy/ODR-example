@@ -17,27 +17,10 @@ from matplotlib.patches import Ellipse
 from scipy import odr, stats
 
 
-def read_data(filename):
-    """Read x, y coordinates and their uncertainties from a CSV file.
-
-    Parameters
-    ----------
-    filename : str
-        Path to the CSV file. File must contain columns 'x', 'dx', 'y', 'dy'
-        where dx and dy represent uncertainties in x and y values.
-
-    Returns
-    -------
-    tuple of numpy.ndarray or None
-        If successful, returns (x, dx, y, dy) where:
-        - x: array of x coordinates
-        - dx: array of x uncertainties
-        - y: array of y coordinates
-        - dy: array of y uncertainties
-
-        Returns None if there are any errors reading the file.
-
-    """
+def read_data(
+    filename: str,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Read data from CSV file."""
     try:
         df = pd.read_csv(filename)
         x = df["x"].values
@@ -50,64 +33,16 @@ def read_data(filename):
         return None
 
 
-def linear_func(p, x):
-    """Compute a linear function of the form y = mx + b.
-
-    Parameters
-    ----------
-    p : array-like, shape (2,)
-        Parameters of the linear function:
-        - p[0] (m): slope
-        - p[1] (b): y-intercept
-    x : array-like
-        Independent variable values
-
-    Returns
-    -------
-    array-like
-        Computed y values: m*x + b
-
-    """
+def linear_func(p: np.ndarray, x: np.ndarray) -> np.ndarray:
+    """Linear function for ODR fitting: y = mx + b"""
     m, b = p
     return m * x + b
 
 
-def perform_odr(x, dx, y, dy):
-    """Orthogonal Distance Regression analysis on data with uncertainties.
-
-    Fits a linear model to data points with uncertainties in both x and y
-    using ODR method from scipy.odr. Also computes goodness-of-fit statistics.
-
-    Parameters
-    ----------
-    x : array-like
-        X coordinates of the data points
-    dx : array-like
-        Uncertainties (standard deviations) in x coordinates
-    y : array-like
-        Y coordinates of the data points
-    dy : array-like
-        Uncertainties (standard deviations) in y coordinates
-
-    Returns
-    -------
-    results : ODR
-        ODR result object containing fit parameters and covariance matrix
-    chi_square : float
-        Chi-square statistic of the fit
-    degrees_freedom : int
-        Number of degrees of freedom (n_points - n_parameters)
-    chi_square_reduced : float
-        Reduced chi-square (chi-square / degrees_freedom)
-    p_value : float
-        P-value for the chi-square goodness-of-fit test
-
-    Notes
-    -----
-    Uses a linear function model: y = mx + b
-    Initial parameter guesses are [m=1.0, b=0.0]
-
-    """
+def perform_odr(
+    x: np.ndarray, dx: np.ndarray, y: np.ndarray, dy: np.ndarray
+) -> tuple[odr.Output, float, int, float, float]:
+    """Perform ODR analysis"""
     linear = odr.Model(linear_func)
     data = odr.RealData(x, y, sx=dx, sy=dy)
     odr_obj = odr.ODR(data, linear, beta0=[1.0, 0.0])
@@ -121,40 +56,17 @@ def perform_odr(x, dx, y, dy):
     return results, chi_square, degrees_freedom, chi_square_reduced, p_value
 
 
-def plot_fit(x, dx, y, dy, results, save_path):
-    """Create and save a plot of data points with error bars and their corresponding fit line.
-
-    Parameters
-    ----------
-    x : array-like
-        X-coordinates of the data points
-    dx : array-like
-        Uncertainties (standard deviations) in x-coordinates
-    y : array-like
-        Y-coordinates of the data points
-    dy : array-like
-        Uncertainties (standard deviations) in y-coordinates
-    results : scipy.odr.Output
-        Results from ODR (Orthogonal Distance Regression) fit
-    save_path : str or Path
-        Path where the plot will be saved
-
-    Notes
-    -----
-    - Automatically switches between point markers and error bars only, based on the
-      relative size of uncertainties compared to data range
-    - Uses error bars when median uncertainty > 1% of data range
-    - Generates fit line using 100 evenly spaced points
-    - Creates a 10x8 inch figure with grid
-
-    Returns
-    -------
-    None
-        The plot is saved to the specified path and the figure is closed
-    """
+def plot_fit(
+    x: np.ndarray,
+    dx: np.ndarray,
+    y: np.ndarray,
+    dy: np.ndarray,
+    results: odr.Output,
+    save_path: str,
+) -> None:
+    """Create and save fit plot"""
     fig = plt.figure(figsize=(10, 8))
 
-    # Determine if error bars are visible
     median_dx = np.median(dx)
     median_dy = np.median(dy)
     x_range = np.max(x) - np.min(x)
@@ -179,7 +91,14 @@ def plot_fit(x, dx, y, dy, results, save_path):
     plt.close()
 
 
-def plot_residuals(x, dx, y, dy, results, save_path):
+def plot_residuals(
+    x: np.ndarray,
+    dx: np.ndarray,
+    y: np.ndarray,
+    dy: np.ndarray,
+    results: odr.Output,
+    save_path: str,
+) -> None:
     """Create and save residuals plot"""
     fig = plt.figure(figsize=(10, 6))
 
@@ -187,7 +106,6 @@ def plot_residuals(x, dx, y, dy, results, save_path):
     residuals = y - y_model
     total_uncertainty = np.sqrt(dy**2 + (results.beta[0] * dx) ** 2)
 
-    # Determine if error bars are visible
     median_uncert = np.median(total_uncertainty)
     resid_range = np.max(residuals) - np.min(residuals)
     use_points = median_uncert / resid_range < 0.01
@@ -204,7 +122,13 @@ def plot_residuals(x, dx, y, dy, results, save_path):
     plt.close()
 
 
-def confidence_ellipse(mean, cov, ax, n_std=1.0, **kwargs):
+def confidence_ellipse(
+    mean: np.ndarray,
+    cov: np.ndarray,
+    ax: plt.Axes,
+    n_std: float = 1.0,
+    **kwargs,
+) -> Ellipse:
     """
     Create a plot of the covariance confidence ellipse of parameters m and b.
     """
@@ -231,31 +155,26 @@ def confidence_ellipse(mean, cov, ax, n_std=1.0, **kwargs):
     return ax.add_patch(ellipse)
 
 
-def format_matrix(matrix):
-    # Convert matrix to numpy array if it isn't already
+def format_matrix(matrix: np.ndarray) -> str:
     matrix = np.asarray(matrix)
 
-    # Format each element with scientific notation
     formatted_elements = [
         [f"{element:1.6e}" for element in row] for row in matrix
     ]
 
-    # Get maximum width for alignment
     width = max(
         len(str(element)) for row in formatted_elements for element in row
     )
 
-    # Create formatted rows
     formatted_rows = [
         " ".join(f"{element:>{width}}" for element in row)
         for row in formatted_elements
     ]
 
-    # Return the full string with newlines
     return "\n".join(formatted_rows)
 
 
-def plot_ellipses(results, save_path):
+def plot_ellipses(results: odr.Output, save_path: str) -> None:
     """Create and save correlation ellipse plot"""
     fig = plt.figure(figsize=(10, 8))
     ax = plt.gca()
@@ -291,7 +210,7 @@ def plot_ellipses(results, save_path):
     plt.close()
 
 
-def main():
+def main() -> None:
     """Main function to run the analysis"""
     default_input = "data.csv"
 
@@ -313,12 +232,10 @@ def main():
         perform_odr(x, dx, y, dy)
     )
 
-    # Create and save plots
     plot_fit(x, dx, y, dy, results, "fit_plot.png")
     plot_residuals(x, dx, y, dy, results, "residuals_plot.png")
     plot_ellipses(results, "correlation_ellipses.png")
 
-    # Save results to text file
     with open("fit_results.txt", "w") as f:
         f.write("Regression Results:\n")
         f.write("-----------------\n")
