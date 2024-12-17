@@ -1,3 +1,21 @@
+"""Generate synthetic data points with uncertainties following a quadratic trend.
+
+This script creates a dataset of n points following a quadratic relationship
+y = 2x + 0.01x² with added Gaussian noise. Both x and y coordinates have
+associated uncertainties (dx, dy) drawn from normal distributions.
+
+Data generation details:
+- x: Evenly spaced values from 0 to n-1
+- dx: Positive uncertainties, normal distribution (μ=0.1, σ=0.01)
+- y: Follows 2x + 0.01x² with added Gaussian noise (σ=0.2)
+- dy: Positive uncertainties, normal distribution (μ=0.15, σ=0.025)
+
+Output:
+- Saves data to 'data.csv' with columns: x, dx, y, dy
+- All values are saved as floats with 4 decimal precision
+- CSV includes header row and uses comma as delimiter
+"""
+
 import numpy as np
 
 n = 15
@@ -15,5 +33,5 @@ np.savetxt(
     delimiter=",",
     header="x,dx,y,dy",
     comments="",
-    fmt=["%d", "%.4f", "%.4f", "%.4f"],
+    fmt="%.4f",  # Use same float format for all columns
 )
