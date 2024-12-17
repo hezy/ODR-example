@@ -37,7 +37,7 @@ def perform_odr(x, dx, y, dy):
 
     degrees_freedom = len(x) - 2
     chi_square = results.sum_square
-    chi_square_reduced = chi_square / (degrees_freedom)
+    chi_square_reduced = chi_square / degrees_freedom
     p_value = 1 - stats.chi2.cdf(chi_square, degrees_freedom)
 
     return results, chi_square, degrees_freedom, chi_square_reduced, p_value
@@ -183,33 +183,9 @@ def plot_ellipses(results, save_path):
     plt.savefig(save_path)
     plt.close()
 
-    # Save results to text file
-    with open("fit_results.txt", "w") as f:
-        f.write("Regression Results:\n")
-        f.write("-----------------\n")
-        f.write(f"Slope: {results.beta[0]:.6f} ± {results.sd_beta[0]:.6f}\n")
-        f.write(
-            f"Intercept: {results.beta[1]:.6f} ± {results.sd_beta[1]:.6f}\n"
-        )
-        f.write(f"\nCovariance matrix:")
-        f.write(f"\n{format_matrix(results.cov_beta)}")
-        f.write(
-            f"\nPearson's Correlation coefficient: {results.cov_beta[0,1] / (results.sd_beta[0] * results.sd_beta[1]):.6f}\n"
-        )
-        f.write(f"\nChi-square: {chi_square:.6f}\n")
-        f.write(f"Deegres of freedom: {deegres_freedom}\n")
-        f.write(f"Reduced chi-square: {chi_square_reduced:.6f}\n")
-        f.write(f"P-value: {p_value:.6f}\n")
-
-    # Create and save plots
-    plot_fit(x, dx, y, dy, results, "fit_plot.png")
-    plot_residuals(x, dx, y, dy, results, "residuals_plot.png")
-    plot_ellipses(results, "correlation_ellipses.png")
-
 
 def main():
     """Main function to run the analysis"""
-
     default_input = "data.csv"
 
     if len(sys.argv) == 1:
@@ -226,9 +202,26 @@ def main():
         return
 
     x, dx, y, dy = data
-    results, chi_square, deegres_freedom, chi_square_reduced, p_value = (
-        perform_odr(x, dx, y, dy)
-    )
+    results, chi_square, degrees_freedom, chi_square_reduced, p_value = perform_odr(x, dx, y, dy)
+    
+    # Create and save plots
+    plot_fit(x, dx, y, dy, results, "fit_plot.png")
+    plot_residuals(x, dx, y, dy, results, "residuals_plot.png")
+    plot_ellipses(results, "correlation_ellipses.png")
+
+    # Save results to text file
+    with open("fit_results.txt", "w") as f:
+        f.write("Regression Results:\n")
+        f.write("-----------------\n")
+        f.write(f"Slope: {results.beta[0]:.6f} ± {results.sd_beta[0]:.6f}\n")
+        f.write(f"Intercept: {results.beta[1]:.6f} ± {results.sd_beta[1]:.6f}\n")
+        f.write(f"\nCovariance matrix:")
+        f.write(f"\n{format_matrix(results.cov_beta)}")
+        f.write(f"\nPearson's Correlation coefficient: {results.cov_beta[0,1] / (results.sd_beta[0] * results.sd_beta[1]):.6f}\n")
+        f.write(f"\nChi-square: {chi_square:.6f}\n")
+        f.write(f"Degrees of freedom: {degrees_freedom}\n")
+        f.write(f"Reduced chi-square: {chi_square_reduced:.6f}\n")
+        f.write(f"P-value: {p_value:.6f}\n")
 
 
 if __name__ == "__main__":

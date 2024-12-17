@@ -35,14 +35,12 @@ https://github.com/hezy/ODR-example/blob/main/Installation_Guide.md
    - y: y-values of the data points
    - dy: uncertainties in the y-values
 
-2. Update the `filename` variable in the `main` function to match your CSV file name
-
-3. Run the script:
+2. Run the script:
    ```
-   python odr-fit.py [data.csv]
-   ```
+   python odr-fit.py data.csv
+(change to your file name)   ```
 
-4. The script will read the data from the CSV file, perform the ODR analysis, and save the regression results in a file `fit_results.txt`
+3. The script will read the data from the CSV file, perform the ODR analysis, and save the regression results in a file `fit_results.txt`
 
 5. Three figures will be saved as files:
 * `fit_plot.png` - the data points with best-fit line
@@ -58,18 +56,18 @@ Running the script with the provided example data will produce the following out
 ```
 Regression Results:
 -----------------
-Slope: 2.277464 ± 0.022014
-Intercept: -0.592683 ± 0.182644
+Slope: 2.132292 ± 0.018035
+Intercept: -0.325048 ± 0.149405
 
 Covariance matrix:
- 3.105763e-04 -2.179691e-03
--2.179691e-03  2.137945e-02
-Pearson's Correlation coefficient: -0.542123
+ 2.608150e-04 -1.854059e-03
+-1.854059e-03  1.789871e-02
+Pearson's Correlation coefficient: -0.688081
 
-Chi-square: 20.284218
-Deegres of freedom: 13
-Reduced chi-square: 1.560324
-P-value: 0.088346
+Chi-square: 16.212495
+Degrees of freedom: 13
+Reduced chi-square: 1.247115
+P-value: 0.237845
 ```
 These results will be saved as a text file. Three figures will also be saved, showing the data points with error bars and the best-fit line, residuals plot, and parameter correlation ellipses for the 1σ, 2σ, and 3σ confidence levels.
 
