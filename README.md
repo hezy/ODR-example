@@ -36,16 +36,27 @@ https://github.com/hezy/ODR-example/blob/main/Installation_Guide.md
    - dy: uncertainties in the y-values
 
 2. Run the script:
-   ```
-   python odr-fit.py data.csv
+```
+python odr-fit.py data.csv
+```
 (change to your file name)
 
-3. The script will read the data from the CSV file, perform the ODR analysis, and save the regression results in a file `fit_results.txt`
+3. The script will read the data from the CSV file, perform the ODR analysis, and save the regression results in your working directory:
 
-5. Three figures will be saved as files:
-* `fit_plot.png` - the data points with best-fit line
-* `residuals_plots.png` - the differences between observed y's to fitted y's
-* `correlation_ellipses.png` - fitted parameters correlation ellipsesi
+`fit_results.txt`
+   - Contains complete regression analysis results
+   - Includes parameter correlations and statistical measures
+   - Shows full covariance matrix in scientific notation
+
+Plot files:
+   - `fit_plot.png`: Data and fit line, with automatic style adjustment
+   - `residuals_plot.png`: Includes propagated uncertainties from both x and y
+   - `correlation_ellipses.png`: Parameter correlation ellipses at 1σ, 2σ, and 3σ confidence levels
+
+## Visualization Features
+- Automatic smart plotting: The tool dynamically chooses between showing point markers or error bars only, based on the relative size of uncertainties
+  - Shows error bars only when uncertainties are significant (>1% of data range)
+  - Shows points with error bars when uncertainties are smaller
 
 ## Example
 
@@ -69,8 +80,27 @@ Degrees of freedom: 13
 Reduced chi-square: 1.125218
 P-value: 0.331159
 ```
-These results will be saved as a text file. Three figures will also be saved, showing the data points with error bars and the best-fit line, residuals plot, and parameter correlation ellipses for the 1σ, 2σ, and 3σ confidence levels.
 
 ![fit plot](https://github.com/hezy/ODR-example/blob/main/fit_plot.png?raw=true)
 ![residuals plot](https://github.com/hezy/ODR-example/blob/main/residuals_plot.png?raw=true)
 ![correlation ellipses](https://github.com/hezy/ODR-example/blob/main/correlation_ellipses.png?raw=true)
+
+## Best Practices
+
+- Verify your uncertainties before analysis
+- Review the residuals plot to assess fit quality
+- Use the p-value and reduced chi-square to evaluate goodness-of-fit
+- Check the correlation ellipses to understand parameter interdependencies
+
+## Troubleshooting
+
+### Common Issues
+- If your CSV file isn't being read correctly, ensure it has exactly these column names: 'x', 'dx', 'y', 'dy'
+- The script requires uncertainties (dx, dy) to be positive values
+- For best visualization results, ensure your uncertainties are reasonable compared to your data range
+
+### Error Messages
+The script will provide clear error messages if:
+- The input file cannot be found
+- The CSV is missing required columns
+- The data contains invalid values
