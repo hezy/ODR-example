@@ -110,7 +110,7 @@ The script will provide clear error messages if:
 Here are some free alternatives for fitting data with uncertainties:
 
 ### Graphical Tools
-- [EddingtonGUI](https://github.com/eddington-gui/eddington-gui): User-friendly GUI for curve fitting with uncertainties
+- [EddingtonGUI](https://github.com/EddLabs/eddington-gui): User-friendly GUI for curve fitting with uncertainties
 - [Fityk](https://fityk.nieto.pl/): Versatile curve fitting tool that supports:
   - Both x and y error bars in fitting
   - Various weighting schemes
@@ -136,7 +136,7 @@ Here are some free alternatives for fitting data with uncertainties:
 
 All tools listed above are free and open source. Most support at least y-error weighted fitting, but full ODR (with both x and y errors) is less common. This script provides ODR capabilities similar to commercial tools, using the robust scipy.odr implementation.
 
-If you prefer a graphical interface for ODR analysis, consider using [EddingtonGUI](https://github.com/eddington-gui/eddington-gui), which provides:
+If you prefer a graphical interface for ODR analysis, consider using [EddingtonGUI](https://github.com/EddLabs/eddington-gui), which provides:
 - A user-friendly graphical interface
 - Similar ODR fitting capabilities
 - Interactive plot manipulation
