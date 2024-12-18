@@ -1,0 +1,5 @@
+[tool.ruff]
+ignore = ["ARG001"]  # Ignore unused parameter warning
+
+[tool.pyright]
+typeCheckingMode = "basic"

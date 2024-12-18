@@ -17,7 +17,9 @@ from matplotlib.patches import Ellipse
 from scipy import odr, stats
 
 
-def read_data(filename):
+def read_data(
+    filename: str,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray] | None:
     """Read x, y coordinates and their uncertainties from a CSV file.
 
     Parameters
@@ -50,7 +52,7 @@ def read_data(filename):
         return None
 
 
-def linear_func(p, x):
+def linear_func(p: np.ndarray, x: np.ndarray) -> np.ndarray:
     """Compute a linear function of the form y = mx + b.
 
     Parameters
@@ -72,7 +74,9 @@ def linear_func(p, x):
     return m * x + b
 
 
-def perform_odr(x, dx, y, dy):
+def perform_odr(
+    x: np.ndarray, dx: np.ndarray, y: np.ndarray, dy: np.ndarray
+) -> tuple[odr.Output, float, int, float, float]:
     """Orthogonal Distance Regression analysis on data with uncertainties.
 
     Fits a linear model to data points with uncertainties in both x and y
@@ -121,7 +125,14 @@ def perform_odr(x, dx, y, dy):
     return results, chi_square, degrees_freedom, chi_square_reduced, p_value
 
 
-def plot_fit(x, dx, y, dy, results, save_path):
+def plot_fit(
+    x: np.ndarray,
+    dx: np.ndarray,
+    y: np.ndarray,
+    dy: np.ndarray,
+    results: odr.Output,
+    save_path: str,
+) -> None:
     """Create and save a plot of data points with error bars and fit line.
 
     Parameters
@@ -176,7 +187,14 @@ def plot_fit(x, dx, y, dy, results, save_path):
     plt.close()
 
 
-def plot_residuals(x, dx, y, dy, results, save_path):
+def plot_residuals(
+    x: np.ndarray,
+    dx: np.ndarray,
+    y: np.ndarray,
+    dy: np.ndarray,
+    results: odr.Output,
+    save_path: str,
+) -> None:
     """Generate and save residuals plot for a linear fit with uncertainties.
 
     Creates a figure showing the difference between observed and model values,
@@ -235,7 +253,13 @@ def plot_residuals(x, dx, y, dy, results, save_path):
     plt.close()
 
 
-def confidence_ellipse(mean, cov, ax, n_std=1.0, **kwargs):
+def confidence_ellipse(
+    mean: np.ndarray,
+    cov: np.ndarray,
+    ax: plt.Axes,
+    n_std: float = 1.0,
+    **kwargs,
+) -> Ellipse:
     """Plots a confidence ellipse representing a bivariate normal distribution.
 
     This function creates an ellipse that visualizes the covariance structure and mean
@@ -291,7 +315,7 @@ def confidence_ellipse(mean, cov, ax, n_std=1.0, **kwargs):
     return ax.add_patch(ellipse)
 
 
-def format_matrix(matrix):
+def format_matrix(matrix: np.ndarray) -> str:
     """Convert a matrix into a neatly formatted string representation.
 
     Converts each element to scientific notation with 6 decimal places and
@@ -341,7 +365,7 @@ def format_matrix(matrix):
     return "\n".join(formatted_rows)
 
 
-def plot_ellipses(results, save_path):
+def plot_ellipses(results: odr.Output, save_path: str) -> None:
     """Create and save a plot showing parameter correlation ellipses at different confidence levels.
 
     This function generates a figure showing confidence ellipses for the
@@ -364,18 +388,15 @@ def plot_ellipses(results, save_path):
     Notes
     -----
     The confidence levels correspond to the following chi-squared values:
-    - 1σ: χ² = 2.30 (68.27% confidence)
-    - 2σ: χ² = 6.18 (95.45% confidence)
-    - 3σ: χ² = 11.83 (99.73% confidence)
+    - 1σ: χ² = 2.30 (39.3% confidence)
+    - 2σ: χ² = 6.18 (95.4% confidence)
+    - 3σ: χ² = 11.83 (99.7% confidence)
 
     The best-fit point is marked with a red star on the plot.
 
     The function closes the plot after saving to free memory.
+
     """
-
-
-def plot_ellipses(results, save_path):
-    """Create and save correlation ellipse plot"""
     fig = plt.figure(figsize=(10, 8))
     ax = plt.gca()
 
@@ -406,11 +427,11 @@ def plot_ellipses(results, save_path):
     plt.legend()
     plt.grid(True)
 
-    plt.savefig(save_path)
+    plt.savefig(str(save_path))
     plt.close()
 
 
-def main():
+def main() -> None:
     """Run orthogonal distance regression analysis on input data and generate outputs.
 
     This function performs the following operations:
