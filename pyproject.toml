@@ -1,6 +1,6 @@
 [tool.ruff]
 # Enable specific rule sets
-select = [
+lint.select = [
     "E",  # pycodestyle errors
     "F",  # pyflakes
     "D",  # pydocstring
@@ -9,7 +9,7 @@ select = [
 ]
 
 # Avoid rules that encourage OOP patterns
-ignore = [
+lint.ignore = [
     "N805",  # first argument of a method should be named 'self'
     "N806",  # variable in function should be lowercase
     "ARG001" # Ignore unused parameter warning

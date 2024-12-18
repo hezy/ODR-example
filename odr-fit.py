@@ -5,15 +5,14 @@ It reads data from a CSV file, performs the Orthogonal Distance Regression
 parameter correlation ellipses.
 """
 
-# pyright: ignore-all
-
 import sys
 
 import matplotlib.pyplot as plt
 import matplotlib.transforms as transforms
 import numpy as np
 import pandas as pd
-from matplotlib.patches import Ellipse
+from matplotlib.axes import Axes
+from matplotlib.patches import Ellipse, Patch
 from scipy import odr, stats
 
 
@@ -42,10 +41,10 @@ def read_data(
     """
     try:
         df = pd.read_csv(filename)
-        x = df["x"].values
-        dx = df["dx"].values
-        y = df["y"].values
-        dy = df["dy"].values
+        x = df["x"].to_numpy()  # Convert to numpy array
+        dx = df["dx"].to_numpy()
+        y = df["y"].to_numpy()
+        dy = df["dy"].to_numpy()
         return x, dx, y, dy
     except Exception as e:
         print(f"Error reading file: {e}")
@@ -118,9 +117,9 @@ def perform_odr(
     results = odr_obj.run()
 
     degrees_freedom = len(x) - 2
-    chi_square = results.sum_square
+    chi_square = results.sum_square  # type: ignore # ODR Output attribute exists at runtime
     chi_square_reduced = chi_square / degrees_freedom
-    p_value = 1 - stats.chi2.cdf(chi_square, degrees_freedom)
+    p_value = float(1 - stats.chi2.cdf(chi_square, degrees_freedom))
 
     return results, chi_square, degrees_freedom, chi_square_reduced, p_value
 
@@ -160,7 +159,7 @@ def plot_fit(
     - Saves plot and closes figure after completion
 
     """
-    fig = plt.figure(figsize=(10, 8))
+    plt.figure(figsize=(10, 8))
 
     # Determine if error bars are visible
     median_dx = np.median(dx)
@@ -231,7 +230,7 @@ def plot_residuals(
     - Grid for better readability
 
     """
-    fig = plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(10, 6))
 
     y_model = linear_func(results.beta, x)
     residuals = y - y_model
@@ -256,17 +255,13 @@ def plot_residuals(
 
 
 def confidence_ellipse(
-    mean: np.ndarray,
-    cov: np.ndarray,
-    ax: plt.Axes,
-    n_std: float = 1.0,
-    **kwargs,
-) -> Ellipse:
+    mean: np.ndarray, cov: np.ndarray, ax: Axes, n_std: float = 1.0, **kwargs
+) -> Patch:
     """Plot a confidence ellipse representing a bivariate normal distribution.
 
-    This function creates an ellipse that visualizes the covariance structure and mean
-    of a 2D normally distributed dataset. The ellipse's size represents the confidence
-    interval determined by n_std standard deviations.
+    This function creates an ellipse that visualizes the covariance structure
+    and mean of a 2D normally distributed dataset. The ellipse's size represents
+    the confidence interval determined by n_std standard deviations.
 
     Parameters
     ----------
@@ -288,7 +283,8 @@ def confidence_ellipse(
 
     Notes
     -----
-    The ellipse is first created at (0,0) with initial radii, then transformed using:
+    The ellipse is first created at (0,0) with initial radii, then transformed
+    using:
     1. 45-degree rotation to align with correlation direction
     2. Scaling according to covariance values and desired confidence level
     3. Translation to the specified mean position
@@ -368,7 +364,7 @@ def format_matrix(matrix: np.ndarray) -> str:
 
 
 def plot_ellipses(results: odr.Output, save_path: str) -> None:
-    """Create and save a plot showing parameter correlation ellipses at different confidence levels.
+    """Create and save a plot showing parameter correlation ellipses.
 
     This function generates a figure showing confidence ellipses for the
     correlation between slope and intercept parameters, typically from a linear
@@ -399,7 +395,7 @@ def plot_ellipses(results: odr.Output, save_path: str) -> None:
     The function closes the plot after saving to free memory.
 
     """
-    fig = plt.figure(figsize=(10, 8))
+    plt.figure(figsize=(10, 8))
     ax = plt.gca()
 
     confidence_data = [
@@ -435,13 +431,14 @@ def plot_ellipses(results: odr.Output, save_path: str) -> None:
 
 
 def main() -> None:
-    """Run orthogonal distance regression analysis on input data and generate outputs.
+    """Run orthogonal distance regression on input data and generate outputs.
 
     This function performs the following operations:
     1. Handles command-line arguments for input file selection
     2. Reads data from the specified CSV file
     3. Performs orthogonal distance regression (ODR)
-    4. Generates three plots: fit visualization, residuals, and correlation ellipses
+    4. Generates three plots: fit visualization, residuals,
+    and correlation ellipses
     5. Saves detailed regression results to a text file
 
     Command-line Usage:
@@ -495,11 +492,12 @@ def main() -> None:
         f.write(
             f"Intercept: {results.beta[1]:.6f} ± {results.sd_beta[1]:.6f}\n"
         )
-        f.write(f"\nCovariance matrix:")
+        f.write("\nCovariance matrix:")
         f.write(f"\n{format_matrix(results.cov_beta)}")
-        f.write(
-            f"\nPearson's Correlation coefficient: {results.cov_beta[0,1] / (results.sd_beta[0] * results.sd_beta[1]):.6f}\n"
+        correlation = results.cov_beta[0, 1] / (
+            results.sd_beta[0] * results.sd_beta[1]
         )
+        f.write(f"\nPearson's Correlation coefficient: {correlation:.6f}\n")
         f.write(f"\nChi-square: {chi_square:.6f}\n")
         f.write(f"Degrees of freedom: {degrees_freedom}\n")
         f.write(f"Reduced chi-square: {chi_square_reduced:.6f}\n")
