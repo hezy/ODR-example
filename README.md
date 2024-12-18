@@ -105,7 +105,36 @@ The script will provide clear error messages if:
 - The CSV is missing required columns
 - The data contains invalid values
 
-## Alternatives
+## Similar Tools and Alternatives
+
+Here are some free alternatives for fitting data with uncertainties:
+
+### Graphical Tools
+- [EddingtonGUI](https://github.com/eddington-gui/eddington-gui): User-friendly GUI for curve fitting with uncertainties
+- [Fityk](https://fityk.nieto.pl/): Versatile curve fitting tool that supports:
+  - Both x and y error bars in fitting
+  - Various weighting schemes
+  - Linear and non-linear fitting
+  - Both GUI and command-line interface
+- [Veusz](https://veusz.github.io/): Python-based plotting and fitting tool
+  - Supports fitting with y-errors
+  - Good plotting capabilities
+  - Can be scripted
+- [Grace](https://plasma-gate.weizmann.ac.il/Grace/) and its fork QtiGrace: Traditional scientific plotting tools
+  - Support fitting with y-errors
+  - Extensive plotting features
+  - Note: do not support x-errors in fitting
+
+### Python Libraries & Tools
+- [lmfit](https://lmfit.github.io/lmfit-py/): Flexible curve fitting with parameter bounds
+- [emcee](https://emcee.readthedocs.io/): Bayesian approach using MCMC
+- [kmpfit](https://www.astro.rug.nl/software/kapteyn/kmpfittutorial.html): Part of Kapteyn Package, supports ODR
+
+### Julia Alternatives
+- [LsqFit.jl](https://github.com/JuliaOpt/LsqFit.jl): Non-linear least squares with weights
+- [CurveFit.jl](https://github.com/JuliaMath/CurveFit.jl): Basic curve fitting capabilities
+
+All tools listed above are free and open source. Most support at least y-error weighted fitting, but full ODR (with both x and y errors) is less common. This script provides ODR capabilities similar to commercial tools, using the robust scipy.odr implementation.
 
 If you prefer a graphical interface for ODR analysis, consider using [EddingtonGUI](https://github.com/eddington-gui/eddington-gui), which provides:
 - A user-friendly graphical interface
