@@ -16,19 +16,28 @@ Output:
 - CSV includes header row and uses comma as delimiter
 """
 
+from typing import Final
 import numpy as np
+from numpy.typing import NDArray
 
-n = 15
-x = np.arange(n, dtype=float)
-dx = np.random.normal(loc=0.1, scale=0.01, size=n)
+# Type alias for clarity
+FloatArray = NDArray[np.float64]
+
+# Constants
+n: Final[int] = 15
+OUTPUT_FILE: Final[str] = "data.csv"
+
+# Generate data
+x: FloatArray = np.arange(n, dtype=np.float64)
+dx: FloatArray = np.random.normal(loc=0.1, scale=0.01, size=n)
 dx = np.clip(dx, 0, None)  # Ensure all values are positive
-y = 2.0 * x + 0.01 * x**2 + 0.2 * (np.random.randn(n))
-dy = np.random.normal(loc=0.15, scale=0.025, size=n)
+y: FloatArray = 2.0 * x + 0.01 * x**2 + 0.1 * (np.random.randn(n))
+dy: FloatArray = np.random.normal(loc=0.15, scale=0.025, size=n)
 dy = np.clip(dy, 0, None)  # Ensure all values are positive
 
 # Save to CSV
 np.savetxt(
-    "data.csv",
+    OUTPUT_FILE,
     np.column_stack([x, dx, y, dy]),
     delimiter=",",
     header="x,dx,y,dy",
