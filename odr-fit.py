@@ -184,6 +184,7 @@ def plot_fit(
     plt.grid(True)
 
     plt.savefig(save_path)
+    plt.show()
     plt.close()
 
 
@@ -250,6 +251,7 @@ def plot_residuals(
     plt.grid(True)
 
     plt.savefig(save_path)
+    plt.show()
     plt.close()
 
 
@@ -260,7 +262,7 @@ def confidence_ellipse(
     n_std: float = 1.0,
     **kwargs,
 ) -> Ellipse:
-    """Plots a confidence ellipse representing a bivariate normal distribution.
+    """Plot a confidence ellipse representing a bivariate normal distribution.
 
     This function creates an ellipse that visualizes the covariance structure and mean
     of a 2D normally distributed dataset. The ellipse's size represents the confidence
@@ -428,6 +430,7 @@ def plot_ellipses(results: odr.Output, save_path: str) -> None:
     plt.grid(True)
 
     plt.savefig(str(save_path))
+    plt.show()
     plt.close()
 
 

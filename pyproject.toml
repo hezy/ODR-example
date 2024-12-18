@@ -1,5 +1,19 @@
 [tool.ruff]
-ignore = ["ARG001"]  # Ignore unused parameter warning
+# Enable specific rule sets
+select = [
+    "E",  # pycodestyle errors
+    "F",  # pyflakes
+    "D",  # pydocstring
+    "UP", # pyupgrade
+    "N",  # pep8-naming
+]
+
+# Avoid rules that encourage OOP patterns
+ignore = [
+    "N805",  # first argument of a method should be named 'self'
+    "N806",  # variable in function should be lowercase
+    "ARG001" # Ignore unused parameter warning
+]
 
 [tool.pyright]
 typeCheckingMode = "basic"
