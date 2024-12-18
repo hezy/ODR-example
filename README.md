@@ -56,18 +56,18 @@ Running the script with the provided example data will produce the following out
 ```
 Regression Results:
 -----------------
-Slope: 2.162649 ± 0.018603
-Intercept: -0.521548 ± 0.147845
+Slope: 2.147160 ± 0.016329
+Intercept: -0.359677 ± 0.137575
 
 Covariance matrix:
- 2.222766e-04 -1.474776e-03
--1.474776e-03  1.403852e-02
-Pearson's Correlation coefficient: -0.536201
+ 2.369639e-04 -1.720251e-03
+-1.720251e-03  1.682074e-02
+Pearson's Correlation coefficient: -0.765758
 
-Chi-square: 20.241101
+Chi-square: 14.627831
 Degrees of freedom: 13
-Reduced chi-square: 1.557008
-P-value: 0.089359
+Reduced chi-square: 1.125218
+P-value: 0.331159
 ```
 These results will be saved as a text file. Three figures will also be saved, showing the data points with error bars and the best-fit line, residuals plot, and parameter correlation ellipses for the 1σ, 2σ, and 3σ confidence levels.
 
