@@ -132,7 +132,7 @@ Here are some free alternatives for fitting data with uncertainties:
 
 ### Julia Alternatives
 - [LsqFit.jl](https://github.com/JuliaOpt/LsqFit.jl): Non-linear least squares with weights
-- [CurveFit.jl](https://github.com/JuliaMath/CurveFit.jl): Basic curve fitting capabilities
+- [CurveFit.jl](https://www.juliapackages.com/p/curvefit): Basic curve fitting capabilities
 
 All tools listed above are free and open source. Most support at least y-error weighted fitting, but full ODR (with both x and y errors) is less common. This script provides ODR capabilities similar to commercial tools, using the robust scipy.odr implementation.
 
