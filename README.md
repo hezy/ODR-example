@@ -104,3 +104,11 @@ The script will provide clear error messages if:
 - The input file cannot be found
 - The CSV is missing required columns
 - The data contains invalid values
+
+## Alternatives
+
+If you prefer a graphical interface for ODR analysis, consider using [EddingtonGUI](https://github.com/eddington-gui/eddington-gui), which provides:
+- A user-friendly graphical interface
+- Similar ODR fitting capabilities
+- Interactive plot manipulation
+- Export options for results and figures
