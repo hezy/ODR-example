@@ -14,6 +14,7 @@ import pandas as pd
 from matplotlib.axes import Axes
 from matplotlib.patches import Ellipse, Patch
 from scipy import odr, stats
+from typing import Callable
 
 
 def read_data(
@@ -73,7 +74,26 @@ def linear_func(p: np.ndarray, x: np.ndarray) -> np.ndarray:
     return m * x + b
 
 
-def perform_odr(
+def parabolic_func(p: np.ndarray, x: np.ndarray) -> np.ndarray:
+    """Compute a parablic function.
+
+    Parameters
+    ----------
+    p : array-like, shape (3,)
+        Parameters of the linear function:
+    x : array-like
+        Independent variable values
+
+    Returns
+    -------
+    array-like
+        Computed y values: p[0] + p[1] * x + p[2] * x**2
+
+    """
+    return p[0] + p[1] * x + p[2] * x**2
+
+
+def linear_odr(
     x: np.ndarray, dx: np.ndarray, y: np.ndarray, dy: np.ndarray
 ) -> tuple[odr.Output, float, int, float, float]:
     """Orthogonal Distance Regression analysis on data with uncertainties.
@@ -117,6 +137,62 @@ def perform_odr(
     results = odr_obj.run()
 
     degrees_freedom = len(x) - 2
+    chi_square = results.sum_square  # type: ignore # ODR Output attribute exists at runtime
+    chi_square_reduced = chi_square / degrees_freedom
+    p_value = float(1 - stats.chi2.cdf(chi_square, degrees_freedom))
+
+    return results, chi_square, degrees_freedom, chi_square_reduced, p_value
+
+
+def perform_odr(
+    x: np.ndarray,
+    dx: np.ndarray,
+    y: np.ndarray,
+    dy: np.ndarray,
+    model_func: Callable[[np.ndarray, np.ndarray], np.ndarray],
+    beta0: np.ndarray,
+) -> tuple[odr.Output, float, int, float, float]:
+    """Orthogonal Distance Regression analysis on data with uncertainties.
+
+    Fits a given model function to data points with uncertainties in both x and y
+    using ODR method from scipy.odr. Also computes goodness-of-fit statistics.
+
+    Parameters
+    ----------
+    x : array-like
+        X coordinates of the data points
+    dx : array-like
+        Uncertainties (standard deviations) in x coordinates
+    y : array-like
+        Y coordinates of the data points
+    dy : array-like
+        Uncertainties (standard deviations) in y coordinates
+    model_func : callable
+        Model function to fit. Should take parameters (beta, x) where beta is
+        the parameter vector and x is the independent variable array
+    beta0 : array-like
+        Initial guesses for the model parameters
+
+    Returns
+    -------
+    results : ODR
+        ODR result object containing fit parameters and covariance matrix
+    chi_square : float
+        Chi-square statistic of the fit
+    degrees_freedom : int
+        Number of degrees of freedom (n_points - n_parameters)
+    chi_square_reduced : float
+        Reduced chi-square (chi-square / degrees_freedom)
+    p_value : float
+        P-value for the chi-square goodness-of-fit test
+    """
+    model = odr.Model(model_func)
+    data = odr.RealData(x, y, sx=dx, sy=dy)
+    odr_obj = odr.ODR(data, model, beta0=beta0)
+    results = odr_obj.run()
+
+    n_params = len(beta0)
+    degrees_freedom = len(x) - n_params
     chi_square = results.sum_square  # type: ignore # ODR Output attribute exists at runtime
     chi_square_reduced = chi_square / degrees_freedom
     p_value = float(1 - stats.chi2.cdf(chi_square, degrees_freedom))
@@ -476,7 +552,7 @@ def main() -> None:
 
     x, dx, y, dy = data
     results, chi_square, degrees_freedom, chi_square_reduced, p_value = (
-        perform_odr(x, dx, y, dy)
+        linear_odr(x, dx, y, dy)
     )
 
     # Create and save plots
