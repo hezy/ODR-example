@@ -1,3 +1,16 @@
+# ---
+# jupyter:
+#   jupytext:
+#     cell_metadata_filter: -all
+#     formats: ipynb,py:percent
+#     text_representation:
+#       extension: .py
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.16.6
+# ---
+
+# %%
 """odr-fit.py performs ODR fit on data with uncertainties in both the x and y.
 
 It reads data from a CSV file, performs the Orthogonal Distance Regression
@@ -5,8 +18,10 @@ It reads data from a CSV file, performs the Orthogonal Distance Regression
 parameter correlation ellipses.
 """
 
+# %%
 import sys
 
+# %%
 import matplotlib.pyplot as plt
 import matplotlib.transforms as transforms
 import numpy as np
@@ -17,6 +32,7 @@ from scipy import odr, stats
 from typing import Callable
 
 
+# %%
 def read_data(
     filename: str,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray] | None:
@@ -52,6 +68,7 @@ def read_data(
         return None
 
 
+# %%
 def linear_func(p: np.ndarray, x: np.ndarray) -> np.ndarray:
     """Compute a linear function of the form y = mx + b.
 
@@ -74,6 +91,7 @@ def linear_func(p: np.ndarray, x: np.ndarray) -> np.ndarray:
     return m * x + b
 
 
+# %%
 def parabolic_func(p: np.ndarray, x: np.ndarray) -> np.ndarray:
     """Compute a parablic function.
 
@@ -93,6 +111,7 @@ def parabolic_func(p: np.ndarray, x: np.ndarray) -> np.ndarray:
     return p[0] + p[1] * x + p[2] * x**2
 
 
+# %%
 def linear_odr(
     x: np.ndarray, dx: np.ndarray, y: np.ndarray, dy: np.ndarray
 ) -> tuple[odr.Output, float, int, float, float]:
@@ -144,6 +163,7 @@ def linear_odr(
     return results, chi_square, degrees_freedom, chi_square_reduced, p_value
 
 
+# %%
 def perform_odr(
     x: np.ndarray,
     dx: np.ndarray,
@@ -200,6 +220,7 @@ def perform_odr(
     return results, chi_square, degrees_freedom, chi_square_reduced, p_value
 
 
+# %%
 def plot_fit(
     x: np.ndarray,
     dx: np.ndarray,
@@ -263,6 +284,7 @@ def plot_fit(
     plt.close()
 
 
+# %%
 def plot_residuals(
     x: np.ndarray,
     dx: np.ndarray,
@@ -330,6 +352,7 @@ def plot_residuals(
     plt.close()
 
 
+# %%
 def confidence_ellipse(
     mean: np.ndarray, cov: np.ndarray, ax: Axes, n_std: float = 1.0, **kwargs
 ) -> Patch:
@@ -389,6 +412,7 @@ def confidence_ellipse(
     return ax.add_patch(ellipse)
 
 
+# %%
 def format_matrix(matrix: np.ndarray) -> str:
     """Convert a matrix into a neatly formatted string representation.
 
@@ -439,6 +463,7 @@ def format_matrix(matrix: np.ndarray) -> str:
     return "\n".join(formatted_rows)
 
 
+# %%
 def plot_ellipses(results: odr.Output, save_path: str) -> None:
     """Create and save a plot showing parameter correlation ellipses.
 
@@ -506,6 +531,7 @@ def plot_ellipses(results: odr.Output, save_path: str) -> None:
     plt.close()
 
 
+# %%
 def main() -> None:
     """Run orthogonal distance regression on input data and generate outputs.
 
@@ -580,5 +606,6 @@ def main() -> None:
         f.write(f"P-value: {p_value:.6f}\n")
 
 
+# %%
 if __name__ == "__main__":
     main()

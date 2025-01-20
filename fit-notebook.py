@@ -1,3 +1,19 @@
+# ---
+# jupyter:
+#   jupytext:
+#     cell_metadata_filter: -all
+#     formats: ipynb,py:percent
+#     text_representation:
+#       extension: .py
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.16.6
+#   kernelspec:
+#     display_name: Python (odr-fit)
+#     language: python
+#     name: odr-fit
+# ---
+
 # %%
 """odr-fit.py performs ODR fit on data with uncertainties in both the x and y.
 
@@ -8,8 +24,6 @@ parameter correlation ellipses.
 
 # %%
 import sys
-
-# %%
 import matplotlib.pyplot as plt
 import matplotlib.transforms as transforms
 import numpy as np
@@ -42,7 +56,7 @@ def read_data_from_csv(filename):
 
 
 # %%
-def linear_func(p: np.ndarray, x: np.ndarray) -> np.ndarray:
+def linear_func(p, x):
     """Compute a linear function of the form y = mx + b.
 
     Parameters
@@ -186,7 +200,7 @@ def perform_odr(x, dx, y, dy, model_func, beta0):
 
 
 # %%
-def plot_fit(x, dx, y, dy, results, save_path)
+def plot_fit(x, dx, y, dy, results, save_path):
     """Create and save a plot of data points with error bars and fit line.
 
     Parameters
@@ -243,7 +257,7 @@ def plot_fit(x, dx, y, dy, results, save_path)
 
 
 # %%
-def plot_residuals(x, dx, y, dy, results, save_path)
+def plot_residuals(x, dx, y, dy, results, save_path):
     """Generate and save residuals plot for a linear fit with uncertainties.
 
     Creates a figure showing the difference between observed and model values,
@@ -304,7 +318,7 @@ def plot_residuals(x, dx, y, dy, results, save_path)
 
 
 # %%
-def confidence_ellipse(mean, cov, ax, n_std = 1.0, **kwargs)
+def confidence_ellipse(mean, cov, ax, n_std = 1.0, **kwargs):
     """Plot a confidence ellipse representing a bivariate normal distribution.
 
     This function creates an ellipse that visualizes the covariance structure
@@ -362,7 +376,7 @@ def confidence_ellipse(mean, cov, ax, n_std = 1.0, **kwargs)
 
 
 # %%
-def format_matrix(matrix)
+def format_matrix(matrix):
     """Convert a matrix into a neatly formatted string representation.
 
     Converts each element to scientific notation with 6 decimal places and
@@ -413,7 +427,7 @@ def format_matrix(matrix)
 
 
 # %%
-def plot_ellipses(results, save_path)
+def plot_ellipses(results, save_path):
     """Create and save a plot showing parameter correlation ellipses.
 
     This function generates a figure showing confidence ellipses for the
@@ -517,3 +531,21 @@ def analyze_data_with_odr(x, dx, y, dy, output_prefix="odr_analysis"):
     }
     
     return fit_results
+
+
+# %%
+x, dx, y, dy = read_data_from_csv('data.csv')
+
+# %%
+results = analyze_data_with_odr(x, dx, y, dy)
+
+# %%
+print("Fit Results:")
+print(f"Slope: {results['slope'][0]:.6f} ± {results['slope'][1]:.6f}")
+print(f"Intercept: {results['intercept'][0]:.6f} ± {results['intercept'][1]:.6f}")
+print(f"\nGoodness of fit:")
+print(f"Chi-square: {results['chi_square']:.6f}")
+print(f"Reduced chi-square: {results['reduced_chi_square']:.6f}")
+print(f"P-value: {results['p_value']:.6f}")
+
+# %%
