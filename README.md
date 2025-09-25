@@ -23,11 +23,13 @@ This Python script performs Orthogonal Distance Regression (ODR) on data with un
 
 ## Installation
 
-Clone this repository, and install the dependencies.
+Clone this repository, and install the dependencies using uv.
 Detailed installation guide for beginners here:
 https://github.com/hezy/ODR-example/blob/main/Installation_Guide.md
 
 ## Usage
+
+### Command Line Version
 
 1. Prepare a CSV file with the following columns: x, dx, y, dy
    - x: x-values of the data points
@@ -37,11 +39,28 @@ https://github.com/hezy/ODR-example/blob/main/Installation_Guide.md
 
 2. Run the script:
 ```
-python odr-fit.py data.csv
+uv run odr-fit.py data.csv
 ```
 (change to your file name)
 
-3. The script will read the data from the CSV file, perform the ODR analysis, and save the regression results in your working directory:
+### Interactive Marimo Notebook Version
+
+For an interactive experience with live visualizations and the ability to modify parameters:
+
+1. Run the marimo notebook:
+```
+uv run --with marimo marimo run odr-fit-marimo.py
+```
+
+2. Your web browser will automatically open to the interactive notebook interface where you can:
+   - Upload and analyze your own CSV files
+   - Modify fitting parameters interactively
+   - View live updates of plots and statistics
+   - Export results and figures
+
+### Output Files
+
+The command line version will save the regression results in your working directory:
 
 `fit_results.txt`
    - Contains complete regression analysis results
@@ -111,33 +130,13 @@ Here are some free alternatives for fitting data with uncertainties:
 
 ### Graphical Tools
 - [EddingtonGUI](https://github.com/EddLabs/eddington-gui): User-friendly GUI for curve fitting with uncertainties
+  - A user-friendly graphical interface
+  - Similar ODR fitting capabilities
+  - Interactive plot manipulation
+  - Export options for results and figures
 - [Fityk](https://fityk.nieto.pl/): Versatile curve fitting tool that supports:
   - Both x and y error bars in fitting
   - Various weighting schemes
   - Linear and non-linear fitting
   - Both GUI and command-line interface
-- [Veusz](https://veusz.github.io/): Python-based plotting and fitting tool
-  - Supports fitting with y-errors
-  - Good plotting capabilities
-  - Can be scripted
-- [Grace](https://plasma-gate.weizmann.ac.il/Grace/) and its fork QtiGrace: Traditional scientific plotting tools
-  - Support fitting with y-errors
-  - Extensive plotting features
-  - Note: do not support x-errors in fitting
 
-### Python Libraries & Tools
-- [lmfit](https://lmfit.github.io/lmfit-py/): Flexible curve fitting with parameter bounds
-- [emcee](https://emcee.readthedocs.io/): Bayesian approach using MCMC
-- [kmpfit](https://www.astro.rug.nl/software/kapteyn/kmpfittutorial.html): Part of Kapteyn Package, supports ODR
-
-### Julia Alternatives
-- [LsqFit.jl](https://github.com/JuliaOpt/LsqFit.jl): Non-linear least squares with weights
-- [CurveFit.jl](https://www.juliapackages.com/p/curvefit): Basic curve fitting capabilities
-
-All tools listed above are free and open source. Most support at least y-error weighted fitting, but full ODR (with both x and y errors) is less common. This script provides ODR capabilities similar to commercial tools, using the robust scipy.odr implementation.
-
-If you prefer a graphical interface for ODR analysis, consider using [EddingtonGUI](https://github.com/EddLabs/eddington-gui), which provides:
-- A user-friendly graphical interface
-- Similar ODR fitting capabilities
-- Interactive plot manipulation
-- Export options for results and figures
