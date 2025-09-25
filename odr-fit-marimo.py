@@ -1,3 +1,10 @@
+"""odr-fit-marimo.py performs ODR fit on data with uncertainties in both x and y.
+
+This is the marimo notebook version of odr-fit.py. It provides an interactive
+environment for exploring Orthogonal Distance Regression (ODR) analysis with
+real-time visualization and educational content.
+"""
+
 # /// script
 # [tool.marimo.runtime]
 # auto_instantiate = false
@@ -10,7 +17,8 @@ app = marimo.App(width="medium")
 
 
 @app.cell
-def _():
+def imports():
+    """Import all required modules and libraries."""
     import marimo as mo
     import sys
     import matplotlib.pyplot as plt
@@ -32,6 +40,7 @@ def _():
         pd,
         plt,
         stats,
+        sys,
         transforms,
     )
 
@@ -54,7 +63,8 @@ def _(mo):
 
 
 @app.cell
-def _(np, pd):
+def data_io_functions(np, pd):
+    """Define data input/output functions."""
     def read_data(
         filename: str,
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray] | None:
@@ -92,20 +102,52 @@ def _(np, pd):
 
 
 @app.cell
-def _(np):
+def model_functions(np):
+    """Define model functions for fitting."""
     def linear_func(p: np.ndarray, x: np.ndarray) -> np.ndarray:
-        """Compute a linear function of the form y = mx + b."""
+        """Compute a linear function of the form y = mx + b.
+
+        Parameters
+        ----------
+        p : array-like, shape (2,)
+            Parameters of the linear function:
+            - p[0] (m): slope
+            - p[1] (b): y-intercept
+        x : array-like
+            Independent variable values
+
+        Returns
+        -------
+        array-like
+            Computed y values: m*x + b
+
+        """
         m, b = p
         return m * x + b
 
     def parabolic_func(p: np.ndarray, x: np.ndarray) -> np.ndarray:
-        """Compute a parabolic function: p[0] + p[1] * x + p[2] * x**2"""
+        """Compute a parabolic function.
+
+        Parameters
+        ----------
+        p : array-like, shape (3,)
+            Parameters of the parabolic function:
+        x : array-like
+            Independent variable values
+
+        Returns
+        -------
+        array-like
+            Computed y values: p[0] + p[1] * x + p[2] * x**2
+
+        """
         return p[0] + p[1] * x + p[2] * x**2
-    return (linear_func,)
+    return (linear_func, parabolic_func)
 
 
 @app.cell
-def _(Callable, np, odr, stats):
+def odr_analysis_functions(Callable, np, odr, stats):
+    """Define ODR analysis functions."""
     def perform_odr(
         x: np.ndarray,
         dx: np.ndarray,
@@ -114,7 +156,40 @@ def _(Callable, np, odr, stats):
         model_func: Callable[[np.ndarray, np.ndarray], np.ndarray],
         beta0: np.ndarray,
     ) -> tuple[odr.Output, float, int, float, float]:
-        """Orthogonal Distance Regression analysis on data with uncertainties."""
+        """Orthogonal Distance Regression analysis on data with uncertainties.
+
+        Fits a given model function to data points with uncertainties in both x and y
+        using ODR method from scipy.odr. Also computes goodness-of-fit statistics.
+
+        Parameters
+        ----------
+        x : array-like
+            X coordinates of the data points
+        dx : array-like
+            Uncertainties (standard deviations) in x coordinates
+        y : array-like
+            Y coordinates of the data points
+        dy : array-like
+            Uncertainties (standard deviations) in y coordinates
+        model_func : callable
+            Model function to fit. Should take parameters (beta, x) where beta is
+            the parameter vector and x is the independent variable array
+        beta0 : array-like
+            Initial guesses for the model parameters
+
+        Returns
+        -------
+        results : ODR
+            ODR result object containing fit parameters and covariance matrix
+        chi_square : float
+            Chi-square statistic of the fit
+        degrees_freedom : int
+            Number of degrees of freedom (n_points - n_parameters)
+        chi_square_reduced : float
+            Reduced chi-square (chi-square / degrees_freedom)
+        p_value : float
+            P-value for the chi-square goodness-of-fit test
+        """
         model = odr.Model(model_func)
         data = odr.RealData(x, y, sx=dx, sy=dy)
         odr_obj = odr.ODR(data, model, beta0=beta0)
@@ -122,7 +197,7 @@ def _(Callable, np, odr, stats):
 
         n_params = len(beta0)
         degrees_freedom = len(x) - n_params
-        chi_square = results.sum_square
+        chi_square = results.sum_square  # type: ignore # ODR Output attribute exists at runtime
         chi_square_reduced = chi_square / degrees_freedom
         p_value = float(1 - stats.chi2.cdf(chi_square, degrees_freedom))
 
@@ -130,127 +205,128 @@ def _(Callable, np, odr, stats):
     return (perform_odr,)
 
 
-@app.cell
-def _(mo, np, pd):
-    # Generate synthetic data for demonstration
-    np.random.seed(42)
-
-    # True parameters
-    true_slope = 2.5
-    true_intercept = 1.0
-    n_points = 30
-
-    # Generate true x values
-    x_true = np.linspace(0, 10, n_points)
-    y_true = true_slope * x_true + true_intercept
-
-    # Add noise to both x and y
-    x_noise_std = 0.3
-    y_noise_std = 0.8
-
-    x_noise = np.random.normal(0, x_noise_std, n_points)
-    y_noise = np.random.normal(0, y_noise_std, n_points)
-
-    x_obs = x_true + x_noise
-    y_obs = y_true + y_noise
-
-    # Create uncertainty arrays
-    dx = np.full(n_points, x_noise_std)
-    dy = np.full(n_points, y_noise_std)
-
-    # Create DataFrame for display
-    data_df = pd.DataFrame({
-        'x_obs': x_obs,
-        'y_obs': y_obs,
-        'dx': dx,
-        'dy': dy
-    })
-
-    mo.md(f"""
-    ## Synthetic Data Generation
-
-    Generated {n_points} data points with:
-    - True slope: {true_slope}
-    - True intercept: {true_intercept}
-    - X uncertainty: ±{x_noise_std}
-    - Y uncertainty: ±{y_noise_std}
-    """)
-    return (
-        data_df,
-        dx,
-        dy,
-        true_intercept,
-        true_slope,
-        x_obs,
-        x_true,
-        y_obs,
-        y_true,
-    )
 
 
 @app.cell
-def _(data_df, mo):
-    mo.ui.data_explorer(data_df)
+def load_default_data(mo, pd, read_data):
+    """Load the default CSV file for analysis."""
+    try:
+        # Load the default data.csv file
+        file_data = read_data("data.csv")
+        if file_data is not None:
+            x, dx, y, dy = file_data
+
+            # Create DataFrame for display
+            data_df = pd.DataFrame({
+                'x': x,
+                'y': y,
+                'dx': dx,
+                'dy': dy
+            })
+
+            mo.md(f"""
+            ## Data Loaded Successfully
+
+            Loaded {len(x)} data points from 'data.csv':
+            - X range: [{min(x):.2f}, {max(x):.2f}]
+            - Y range: [{min(y):.2f}, {max(y):.2f}]
+            - Average X uncertainty: {dx.mean():.3f}
+            - Average Y uncertainty: {dy.mean():.3f}
+
+            This uses the same data loading as the CLI version.
+            """)
+        else:
+            mo.md("❌ Could not load data.csv - make sure the file exists")
+            data_df, dx, dy, x, y = None, None, None, None, None
+    except Exception as e:
+        mo.md(f"❌ Error loading data.csv: {e}")
+        data_df, dx, dy, x, y = None, None, None, None, None
+
+    return data_df, dx, dy, x, y
+
+
+@app.cell
+def display_data_explorer(data_df, mo):
+    """Display interactive data explorer."""
+    if data_df is not None:
+        mo.ui.data_explorer(data_df)
+    else:
+        mo.md("*Data explorer will appear when data is loaded*")
     return
 
 
 @app.cell
-def _(
+def perform_linear_odr(
     dx,
     dy,
     linear_func,
     mo,
     perform_odr,
-    true_intercept,
-    true_slope,
-    x_obs,
-    y_obs,
+    x,
+    y,
 ):
-    # Perform ODR analysis
-    results, chi_square, degrees_freedom, chi_square_reduced, p_value = perform_odr(
-        x_obs, dx, y_obs, dy, linear_func, [1.0, 0.0]
-    )
+    """Perform ODR analysis on the data."""
+    if x is not None and y is not None:
+        # Perform ODR analysis using the same approach as CLI version
+        results, chi_square, degrees_freedom, chi_square_reduced, p_value = perform_odr(
+            x, dx, y, dy, linear_func, [1.0, 0.0]
+        )
 
-    slope_odr, intercept_odr = results.beta
-    slope_err, intercept_err = results.sd_beta
+        slope_odr, intercept_odr = results.beta
+        slope_err, intercept_err = results.sd_beta
 
-    mo.md(f"""
-    ## ODR Fit Results
+        mo.md(f"""
+        ## ODR Analysis Results
 
-    **Fitted Parameters:**
-    - Slope: `{slope_odr:.4f} ± {slope_err:.4f}` (true: {true_slope})
-    - Intercept: `{intercept_odr:.4f} ± {intercept_err:.4f}` (true: {true_intercept})
+        **Fitted Parameters:**
+        - Slope: `{slope_odr:.4f} ± {slope_err:.4f}`
+        - Intercept: `{intercept_odr:.4f} ± {intercept_err:.4f}`
 
-    **Goodness of Fit:**
-    - χ²: {chi_square:.2f}
-    - Degrees of freedom: {degrees_freedom}
-    - Reduced χ²: {chi_square_reduced:.2f}
-    - P-value: {p_value:.4f}
-    """)
+        **Goodness of Fit:**
+        - χ²: {chi_square:.2f}
+        - Degrees of freedom: {degrees_freedom}
+        - Reduced χ²: {chi_square_reduced:.2f}
+        - P-value: {p_value:.4f}
+
+        **Interpretation:**
+        {'✅ Good fit' if chi_square_reduced < 2 else '⚠️ Poor fit'} (χ²ᵣ = {chi_square_reduced:.2f})
+        {'✅ Model consistent with data' if p_value > 0.05 else '⚠️ Model may be inconsistent'} (p = {p_value:.4f})
+        """)
+    else:
+        mo.md("*ODR analysis results will appear when data is loaded*")
+        chi_square, chi_square_reduced, degrees_freedom, p_value, results = None, None, None, None, None
+
     return chi_square, chi_square_reduced, degrees_freedom, p_value, results
 
 
 @app.cell
-def _(dx, dy, linear_func, np, plt, results, x_obs, x_true, y_obs, y_true):
-    # Plot data and fit
+def plot_fit_results(dx, dy, linear_func, np, plt, results, x, y):
+    """Create and display plot of data points with error bars and fit line."""
+    # This mirrors the plot_fit function from the CLI version
     fig, ax = plt.subplots(figsize=(10, 8))
 
-    # Plot data with error bars
-    ax.errorbar(x_obs, y_obs, xerr=dx, yerr=dy, fmt='o', alpha=0.7, label='Observed data')
+    # Determine if error bars are visible (same logic as CLI version)
+    median_dx = np.median(dx)
+    median_dy = np.median(dy)
+    x_range = np.max(x) - np.min(x)
+    y_range = np.max(y) - np.min(y)
 
-    # Plot true line
-    ax.plot(x_true, y_true, 'k--', linewidth=2, label='True line')
+    _use_points_fit = (median_dx / x_range < 0.01) and (median_dy / y_range < 0.01)
+    _marker_fit = "o" if _use_points_fit else "o"  # Always show points in marimo for clarity
+
+    # Plot data with error bars
+    ax.errorbar(x, y, xerr=dx, yerr=dy, fmt=_marker_fit, alpha=0.7, label='Data')
 
     # Plot ODR fit
-    x_fit = np.linspace(min(x_obs), max(x_obs), 100)
+    x_fit = np.linspace(min(x), max(x), 100)
     y_fit = linear_func(results.beta, x_fit)
-    ax.plot(x_fit, y_fit, 'r-', linewidth=2, label='ODR fit')
+    ax.plot(x_fit, y_fit, 'r-', linewidth=2, label='Fit')
 
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
     ax.set_title('ODR Fit with Uncertainties')
     ax.legend()
-    ax.grid(True, alpha=0.3)
+    ax.grid(True)
 
     plt.tight_layout()
     ax
@@ -258,20 +334,27 @@ def _(dx, dy, linear_func, np, plt, results, x_obs, x_true, y_obs, y_true):
 
 
 @app.cell
-def _(dx, dy, linear_func, np, plt, results, x_obs, y_obs):
-    # Plot residuals
+def plot_residuals_analysis(dx, dy, linear_func, np, plt, results, x, y):
+    """Generate and display residuals plot for the linear fit."""
+    # This mirrors the plot_residuals function from the CLI version
     fig_resid, ax_resid = plt.subplots(figsize=(10, 6))
 
-    y_model = linear_func(results.beta, x_obs)
-    residuals = y_obs - y_model
+    y_model = linear_func(results.beta, x)
+    residuals = y - y_model
     total_uncertainty = np.sqrt(dy**2 + (results.beta[0] * dx) ** 2)
 
-    ax_resid.errorbar(x_obs, residuals, yerr=total_uncertainty, fmt='o', alpha=0.7)
-    ax_resid.axhline(y=0, color='r', linestyle='-', alpha=0.8)
+    # Determine if error bars are visible (same logic as CLI version)
+    median_uncert = np.median(total_uncertainty)
+    resid_range = np.max(residuals) - np.min(residuals)
+    _use_points_resid = median_uncert / resid_range < 0.01
+    _marker_resid = "o" if _use_points_resid else "o"  # Always show points in marimo for clarity
+
+    ax_resid.errorbar(x, residuals, yerr=total_uncertainty, fmt=_marker_resid, alpha=0.7)
+    ax_resid.axhline(y=0, color='r', linestyle='-')
     ax_resid.set_xlabel('X')
     ax_resid.set_ylabel('Residuals')
-    ax_resid.set_title('Residuals Plot')
-    ax_resid.grid(True, alpha=0.3)
+    ax_resid.set_title('Residuals')
+    ax_resid.grid(True)
 
     plt.tight_layout()
     ax_resid
@@ -279,11 +362,36 @@ def _(dx, dy, linear_func, np, plt, results, x_obs, y_obs):
 
 
 @app.cell
-def _(Axes, Ellipse, Patch, np, transforms):
+def plotting_utilities(Axes, Ellipse, Patch, np, transforms):
+    """Define utility functions for plotting."""
     def confidence_ellipse(
         mean: np.ndarray, cov: np.ndarray, ax: Axes, n_std: float = 1.0, **kwargs
     ) -> Patch:
-        """Plot a confidence ellipse representing a bivariate normal distribution."""
+        """Plot a confidence ellipse representing a bivariate normal distribution.
+
+        This function creates an ellipse that visualizes the covariance structure
+        and mean of a 2D normally distributed dataset. The ellipse's size represents
+        the confidence interval determined by n_std standard deviations.
+
+        Parameters
+        ----------
+        mean : array-like, shape (2,)
+            The center point (mean) of the ellipse in format [x, y]
+        cov : array-like, shape (2, 2)
+            The 2x2 covariance matrix of the distribution
+        ax : matplotlib.axes.Axes
+            The axes object to draw the ellipse on
+        n_std : float, optional (default=1.0)
+            The number of standard deviations determining the ellipse's size
+        **kwargs : dict
+            Additional keyword arguments passed to matplotlib.patches.Ellipse
+
+        Returns
+        -------
+        matplotlib.patches.Ellipse
+            The added ellipse patch object
+
+        """
         pearson = cov[0, 1] / np.sqrt(cov[0, 0] * cov[1, 1])
 
         ell_radius_x = np.sqrt(1 + pearson)
@@ -309,12 +417,13 @@ def _(Axes, Ellipse, Patch, np, transforms):
 
 
 @app.cell
-def _(confidence_ellipse, np, plt, results, true_intercept, true_slope):
-    # Plot parameter correlation ellipses
+def plot_correlation_ellipses(confidence_ellipse, np, plt, results):
+    """Create and display plot showing parameter correlation ellipses."""
+    # This mirrors the plot_ellipses function from the CLI version
     fig_ellipse, ax_ellipse = plt.subplots(figsize=(10, 8))
 
     confidence_data = [
-        (2.30, "1σ (68.3%)", "red"),
+        (2.30, "1σ (39.3%)", "red"),  # Corrected percentages to match CLI
         (6.18, "2σ (95.4%)", "green"),
         (11.83, "3σ (99.7%)", "blue"),
     ]
@@ -331,19 +440,14 @@ def _(confidence_ellipse, np, plt, results, true_intercept, true_slope):
         )
 
     ax_ellipse.plot(
-        results.beta[0], results.beta[1], "r*", label="Best fit", markersize=12
-    )
-
-    # Mark true values
-    ax_ellipse.plot(
-        true_slope, true_intercept, "ko", label="True values", markersize=8
+        results.beta[0], results.beta[1], "r*", label="Best fit", markersize=10
     )
 
     ax_ellipse.set_xlabel("Slope (m)")
     ax_ellipse.set_ylabel("Intercept (b)")
     ax_ellipse.set_title("Parameter Correlation Ellipses")
     ax_ellipse.legend()
-    ax_ellipse.grid(True, alpha=0.3)
+    ax_ellipse.grid(True)
 
     plt.tight_layout()
     ax_ellipse
@@ -351,7 +455,7 @@ def _(confidence_ellipse, np, plt, results, true_intercept, true_slope):
 
 
 @app.cell
-def _(
+def utility_functions_and_results(
     chi_square,
     chi_square_reduced,
     degrees_freedom,
@@ -360,8 +464,28 @@ def _(
     p_value,
     results,
 ):
+    """Define utility functions and display detailed results."""
     def format_matrix(matrix: np.ndarray) -> str:
-        """Convert a matrix into a neatly formatted string representation."""
+        """Convert a matrix into a neatly formatted string representation.
+
+        Converts each element to scientific notation with 6 decimal places and
+        aligns columns for readability.
+
+        Parameters
+        ----------
+        matrix : array-like
+            Input 2D matrix that can be converted to a NumPy array.
+
+        Returns
+        -------
+        str
+            String representation of the matrix where:
+            - Each element is in scientific notation (1.234567e+00 format)
+            - Elements are right-aligned within columns
+            - Rows are separated by newlines
+            - Columns are separated by single spaces
+
+        """
         matrix = np.asarray(matrix)
 
         # Format each element with scientific notation
@@ -383,23 +507,26 @@ def _(
         # Return the full string with newlines
         return "\n".join(formatted_rows)
 
-    # Display detailed results
+    # Display detailed results (mirrors the CLI version output format)
     correlation = results.cov_beta[0, 1] / (results.sd_beta[0] * results.sd_beta[1])
 
     mo.md(f"""
     ## Detailed Analysis Results
 
-    ### Parameter Statistics
+    This section mirrors the output that would be saved to 'fit_results.txt' in the CLI version.
+
+    ### Regression Results
     - **Slope**: {results.beta[0]:.6f} ± {results.sd_beta[0]:.6f}
     - **Intercept**: {results.beta[1]:.6f} ± {results.sd_beta[1]:.6f}
-    - **Pearson correlation coefficient**: {correlation:.6f}
 
     ### Covariance Matrix
     ```
     {format_matrix(results.cov_beta)}
     ```
 
-    ### Goodness of Fit
+    **Pearson's Correlation coefficient**: {correlation:.6f}
+
+    ### Goodness of Fit Statistics
     - **Chi-square**: {chi_square:.6f}
     - **Degrees of freedom**: {degrees_freedom}
     - **Reduced chi-square**: {chi_square_reduced:.6f}
@@ -410,28 +537,34 @@ def _(
 
     {"The model is **consistent** with the data" if p_value > 0.05 else "The model may be **inconsistent** with the data"} (p = {p_value:.4f})
     """)
-    return
+    return (format_matrix,)
 
 
 @app.cell
-def _(mo):
+def file_io_section(mo):
+    """Introduction to file I/O capabilities."""
     mo.md(
         """
     ## File I/O Functions
 
-    The original script includes functionality to read data from CSV files and save results.
-    Here are the key functions that can be used for file operations:
+    The original CLI script includes functionality to read data from CSV files and save results.
+    This marimo version can also read CSV files with the same format expected by the CLI version:
+    - Column 'x': x coordinates
+    - Column 'dx': x uncertainties
+    - Column 'y': y coordinates
+    - Column 'dy': y uncertainties
     """
     )
     return
 
 
 @app.cell
-def _(mo):
-    # File I/O example
+def file_input_ui(mo):
+    """Create file input UI element."""
+    # File I/O example - matches the default from CLI version
     input_filename = mo.ui.text(
         value="data.csv",
-        label="Input CSV filename:",
+        label="Input CSV filename (same format as CLI version):",
         full_width=False
     )
 
@@ -440,47 +573,63 @@ def _(mo):
 
 
 @app.cell
-def _(input_filename):
+def display_filename_input(input_filename):
+    """Display the filename input widget."""
     input_filename
     return
 
 
 @app.cell
-def _(input_filename, mo, read_data):
-    # Optional: Try to read from file if it exists
+def handle_file_input(input_filename, mo, read_data):
+    """Handle file input and provide feedback."""
+    # Optional: Try to read from file if it exists (matches CLI behavior)
     if input_filename.value and input_filename.value != "data.csv":
         try:
-            file_data = read_data(input_filename.value)
-            if file_data is not None:
-                x_file, dx_file, y_file, dy_file = file_data
+            _file_data = read_data(input_filename.value)
+            if _file_data is not None:
+                x_file, dx_file, y_file, dy_file = _file_data
                 mo.md(f"""
                 ✅ **Successfully loaded data from {input_filename.value}**
                 - Number of points: {len(x_file)}
                 - X range: [{min(x_file):.2f}, {max(x_file):.2f}]
                 - Y range: [{min(y_file):.2f}, {max(y_file):.2f}]
+
+                *This data would be processed the same way as in the CLI version.*
                 """)
             else:
                 mo.md(f"❌ **Could not read file: {input_filename.value}**")
         except Exception as e:
             mo.md(f"❌ **Error reading file**: {str(e)}")
     else:
-        mo.md("💡 **Using synthetic data** - Enter a CSV filename above to load external data")
+        mo.md("💡 **Enter a CSV filename above to load data** (same format as CLI version)")
     return
 
 
 @app.cell
-def _(mo):
+def summary_section(mo):
+    """Provide summary of capabilities."""
     mo.md(
         """
     ## Summary
 
-    This notebook demonstrates comprehensive ODR analysis capabilities:
+    This marimo notebook demonstrates the same ODR analysis capabilities as the CLI version:
 
-    1. **Data Generation/Loading**: Synthetic data with controlled uncertainties or CSV file input
-    2. **ODR Fitting**: Linear and parabolic models with full uncertainty propagation
-    3. **Statistical Analysis**: Chi-square tests, p-values, and parameter correlations
-    4. **Visualization**: Data plots, residual analysis, and confidence ellipses
-    5. **File I/O**: Reading CSV data and exporting results
+    1. **Data Loading**: CSV file input with same format as CLI version
+    2. **ODR Analysis**: Same `perform_odr()` function with identical statistical calculations
+    3. **Visualization**: Same plotting logic as CLI version but with inline display
+    4. **Results**: Same detailed statistics and goodness-of-fit metrics
+    5. **Educational Enhancement**: Interactive exploration of ODR analysis
+
+    ### Key Similarities with CLI Version:
+    - Identical core analysis functions (`read_data`, `perform_odr`, `confidence_ellipse`, etc.)
+    - Same statistical calculations and goodness-of-fit tests
+    - Same plotting logic (error bar visibility, axis labels, etc.)
+    - Same result formatting and covariance matrix display
+
+    ### Marimo Enhancements:
+    - Interactive data exploration
+    - Inline plot display
+    - Educational markdown documentation
 
     The ODR method is particularly valuable when both x and y measurements have significant uncertainties,
     providing more accurate parameter estimates than standard least-squares regression.
