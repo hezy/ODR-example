@@ -1,3 +1,16 @@
+[project]
+name = "odr-example"
+description = "Orthogonal Distance Regression examples"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=2.1.0",
+    "scipy>=1.14.0",
+    "pandas>=2.2.0",
+    "matplotlib>=3.9.0",
+    "marimo>=0.16.0",
+]
+
 [tool.ruff]
 # Enable specific rule sets
 lint.select = [
