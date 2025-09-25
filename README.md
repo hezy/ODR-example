@@ -128,12 +128,12 @@ The script will provide clear error messages if:
 
 Here are some free alternatives for fitting data with uncertainties:
 
-### Graphical Tools
 - [EddingtonGUI](https://github.com/EddLabs/eddington-gui): User-friendly GUI for curve fitting with uncertainties
   - A user-friendly graphical interface
   - Similar ODR fitting capabilities
   - Interactive plot manipulation
   - Export options for results and figures
+
 - [Fityk](https://fityk.nieto.pl/): Versatile curve fitting tool that supports:
   - Both x and y error bars in fitting
   - Various weighting schemes
