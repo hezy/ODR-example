@@ -1,17 +1,37 @@
 # ODR Fit with Uncertainties
 
-This Python script performs Orthogonal Distance Regression (ODR) on data with uncertainties in both the x and y variables. It reads data from a CSV file, performs the ODR analysis, and creates plots for the data, fit, residuals, and parameter correlation ellipses.
+This educational project provides two complementary implementations of Orthogonal Distance Regression (ODR) analysis for data with uncertainties in both x and y variables:
+
+1. **`odr-fit.py`** - Command-line script for batch processing
+2. **`odr-fit-marimo.py`** - Interactive marimo notebook for educational exploration
+
+Both implementations share identical core analysis functions and produce equivalent statistical results, making them perfect for learning how the same scientific computation can be applied in different contexts.
 
 ## Features
 
-- Reads data from a CSV file with columns for x, y, and their uncertainties (dx and dy)
-- Performs ODR analysis using the `scipy.odr` module
-- Calculates chi-square, reduced chi-square, and p-value for the fit
-- Creates a figure with subplots for:
-  - Data points with error bars and the best-fit line
-  - Residuals plot with error bars
-  - Parameter correlation ellipses (2D confidence regions) for the slope and intercept
-- Prints the regression results, including the best-fit parameters, their uncertainties, correlation coefficient, chi-square, reduced chi-square, and p-value
+### Core Analysis Capabilities (Identical in Both Versions)
+- Reads data from CSV files with columns: x, dx, y, dy (uncertainties)
+- Performs ODR analysis using the `scipy.odr` module with full uncertainty propagation
+- Calculates comprehensive goodness-of-fit statistics:
+  - Chi-square and reduced chi-square
+  - P-value for statistical significance
+  - Parameter correlation coefficients
+- Creates three key visualizations:
+  - Data points with error bars and fitted line
+  - Residuals plot with propagated uncertainties
+  - Parameter correlation ellipses (1σ, 2σ, 3σ confidence regions)
+
+### Command-Line Version (`odr-fit.py`)
+- Batch processing with command-line arguments
+- Saves results to files (plots as PNG, statistics as TXT)
+- Optimized for automated analysis workflows
+
+### Interactive Notebook Version (`odr-fit-marimo.py`)
+- Live, interactive exploration with marimo
+- Real-time visualization updates
+- Educational enhancements with synthetic data generation
+- Inline documentation explaining each analysis step
+- Direct comparison with known true parameter values
 
 ## Dependencies
 
@@ -45,7 +65,7 @@ uv run odr-fit.py data.csv
 
 ### Interactive Marimo Notebook Version
 
-For an interactive experience with live visualizations and the ability to modify parameters:
+For educational exploration with interactive visualizations:
 
 1. Run the marimo notebook:
 ```
@@ -53,24 +73,43 @@ uv run --with marimo marimo run odr-fit-marimo.py
 ```
 
 2. Your web browser will automatically open to the interactive notebook interface where you can:
-   - Upload and analyze your own CSV files
-   - Modify fitting parameters interactively
-   - View live updates of plots and statistics
-   - Export results and figures
+   - Explore synthetic data with known parameters for validation
+   - Upload and analyze your own CSV files (same format as CLI version)
+   - See real-time comparison between fitted and true parameter values
+   - Understand each analysis step through educational documentation
+   - View the same plots and statistics as the CLI version, but inline
 
-### Output Files
+### Structural Similarities for Learning
 
-The command line version will save the regression results in your working directory:
+Both versions are intentionally structured with:
+- **Identical core functions**: `read_data()`, `perform_odr()`, `confidence_ellipse()`, etc.
+- **Same analysis workflow**: Data loading → ODR fitting → Statistical analysis → Visualization
+- **Consistent variable naming** and function signatures
+- **Equivalent statistical calculations** and goodness-of-fit tests
+- **Same plotting logic** with identical error bar handling and styling
 
-`fit_results.txt`
-   - Contains complete regression analysis results
-   - Includes parameter correlations and statistical measures
-   - Shows full covariance matrix in scientific notation
+### Output Comparison
+
+**Command-Line Version (`odr-fit.py`) - File Output:**
+
+`fit_results.txt` - Complete regression analysis:
+   - Best-fit parameters with uncertainties
+   - Covariance matrix in scientific notation
+   - Pearson correlation coefficient
+   - Chi-square statistics and p-value
 
 Plot files:
-   - `fit_plot.png`: Data and fit line, with automatic style adjustment
-   - `residuals_plot.png`: Includes propagated uncertainties from both x and y
-   - `correlation_ellipses.png`: Parameter correlation ellipses at 1σ, 2σ, and 3σ confidence levels
+   - `fit_plot.png`: Data and fit line with automatic style adjustment
+   - `residuals_plot.png`: Residuals with propagated uncertainties
+   - `correlation_ellipses.png`: Parameter correlation ellipses (1σ, 2σ, 3σ)
+
+**Marimo Version (`odr-fit-marimo.py`) - Interactive Display:**
+   - Same statistical results displayed inline with educational formatting
+   - Same plots rendered interactively in the browser
+   - Additional educational features:
+     - Comparison with known true parameter values
+     - Real-time parameter updates
+     - Step-by-step analysis explanation
 
 ## Visualization Features
 - Automatic smart plotting: The tool dynamically chooses between showing point markers or error bars only, based on the relative size of uncertainties
@@ -79,9 +118,11 @@ Plot files:
 
 ## Example
 
-An example CSV file (`data.csv`) is provided with the script that produced it (`generate-fake-data.py`). The data represents measurements with uncertainties in both x and y variables.
+An example CSV file (`data.csv`) is provided with the script that produced it (`generate_fake_data.py`). The data represents synthetic measurements with uncertainties in both x and y variables, perfect for testing both implementations.
 
-Running the script with the provided example data will produce the following output:
+### Example Results
+
+Running either version with the provided example data will produce equivalent statistical results. The CLI version output:
 
 ```
 Regression Results:
@@ -100,43 +141,73 @@ Reduced chi-square: 1.125218
 P-value: 0.331159
 ```
 
+The marimo version displays the same statistical information interactively with additional educational context and real-time parameter comparison.
+
 ![fit plot](https://github.com/hezy/ODR-example/blob/main/fit_plot.png?raw=true)
 ![residuals plot](https://github.com/hezy/ODR-example/blob/main/residuals_plot.png?raw=true)
 ![correlation ellipses](https://github.com/hezy/ODR-example/blob/main/correlation_ellipses.png?raw=true)
 
-## Best Practices
+## Educational Approach and Best Practices
 
+### Learning with Both Versions
+- **Start with the marimo notebook** to understand the analysis interactively
+- **Use the CLI version** for processing your own datasets
+- **Compare the source code** to see how the same analysis works in different contexts
+- **Note the identical core functions** across both implementations
+
+### Analysis Best Practices (Both Versions)
 - Verify your uncertainties before analysis
 - Review the residuals plot to assess fit quality
 - Use the p-value and reduced chi-square to evaluate goodness-of-fit
 - Check the correlation ellipses to understand parameter interdependencies
+- Compare results between synthetic and real data to build intuition
 
 ## Troubleshooting
 
-### Common Issues
-- If your CSV file isn't being read correctly, ensure it has exactly these column names: 'x', 'dx', 'y', 'dy'
-- The script requires uncertainties (dx, dy) to be positive values
-- For best visualization results, ensure your uncertainties are reasonable compared to your data range
+### Common Issues (Both Versions)
+- **CSV format**: Ensure your file has exactly these column names: 'x', 'dx', 'y', 'dy'
+- **Positive uncertainties**: Both dx and dy must be positive values
+- **Reasonable uncertainties**: For best visualization, ensure uncertainties are reasonable compared to your data range
+
+### Version-Specific Issues
+
+**Command-Line Version:**
+- File not found errors: Check file path and working directory
+- Permission errors: Ensure write permissions for output files
+
+**Marimo Version:**
+- Browser not opening: Check firewall settings or manually navigate to displayed URL
+- Interactive elements not responding: Refresh the browser page
+- File upload issues: Use the same CSV format as the CLI version
 
 ### Error Messages
-The script will provide clear error messages if:
-- The input file cannot be found
-- The CSV is missing required columns
-- The data contains invalid values
+Both versions provide clear error messages for:
+- Input file issues (missing, unreadable, wrong format)
+- Missing required CSV columns
+- Invalid data values (negative uncertainties, NaN values)
+
+## Educational Value and Extensions
+
+### Learning Objectives
+This dual-implementation approach teaches:
+- How the same scientific analysis can be implemented in different contexts
+- The trade-offs between batch processing (CLI) and interactive exploration (notebooks)
+- Good software engineering practices with shared, reusable functions
+- Statistical analysis and uncertainty propagation in experimental data
+
+### Potential Extensions
+Students can extend this project by:
+- Adding new model functions (polynomial, exponential, etc.)
+- Implementing different uncertainty weighting schemes
+- Adding data filtering and outlier detection
+- Creating additional visualization options
+- Comparing ODR with standard least-squares fitting
 
 ## Similar Tools and Alternatives
 
-Here are some free alternatives for fitting data with uncertainties:
+For comparison with other fitting tools:
 
-- [EddingtonGUI](https://github.com/EddLabs/eddington-gui): User-friendly GUI for curve fitting with uncertainties
-  - A user-friendly graphical interface
-  - Similar ODR fitting capabilities
-  - Interactive plot manipulation
-  - Export options for results and figures
-
-- [Fityk](https://fityk.nieto.pl/): Versatile curve fitting tool that supports:
-  - Both x and y error bars in fitting
-  - Various weighting schemes
-  - Linear and non-linear fitting
-  - Both GUI and command-line interface
+- [EddingtonGUI](https://github.com/EddLabs/eddington-gui): GUI-based curve fitting with uncertainties
+- [Fityk](https://fityk.nieto.pl/): Professional curve fitting with both CLI and GUI interfaces
+- Standard scipy.optimize tools: For comparison with non-ODR approaches
 
