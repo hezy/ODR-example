@@ -186,23 +186,6 @@ Both versions provide clear error messages for:
 - Missing required CSV columns
 - Invalid data values (negative uncertainties, NaN values)
 
-## Educational Value and Extensions
-
-### Learning Objectives
-This dual-implementation approach teaches:
-- How the same scientific analysis can be implemented in different contexts
-- The trade-offs between batch processing (CLI) and interactive exploration (notebooks)
-- Good software engineering practices with shared, reusable functions
-- Statistical analysis and uncertainty propagation in experimental data
-
-### Potential Extensions
-Students can extend this project by:
-- Adding new model functions (polynomial, exponential, etc.)
-- Implementing different uncertainty weighting schemes
-- Adding data filtering and outlier detection
-- Creating additional visualization options
-- Comparing ODR with standard least-squares fitting
-
 ## Similar Tools and Alternatives
 
 For comparison with other fitting tools:
