@@ -66,34 +66,45 @@ def data_io_functions(np, pd):
     """Define data input/output functions."""
     def read_data(
         filename: str,
-    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray] | None:
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, list[str]] | None:
         """Read x, y coordinates and their uncertainties from a CSV file.
 
         Parameters
         ----------
         filename : str
-            Path to the CSV file. File must contain columns 'x', 'dx', 'y', 'dy'
-            where dx and dy represent uncertainties in x and y values.
+            Path to the CSV file. File must contain 4 columns representing:
+            independent variable, its uncertainty, dependent variable, and its uncertainty.
+            Supports any column names (e.g., 'x,dx,y,dy' or 't,dt,h,dh').
 
         Returns
         -------
-        tuple of numpy.ndarray or None
-            If successful, returns (x, dx, y, dy) where:
-            - x: array of x coordinates
-            - dx: array of x uncertainties
-            - y: array of y coordinates
-            - dy: array of y uncertainties
+        tuple of numpy.ndarray and list or None
+            If successful, returns (x, dx, y, dy, col_names) where:
+            - x: array of independent variable values
+            - dx: array of independent variable uncertainties
+            - y: array of dependent variable values
+            - dy: array of dependent variable uncertainties
+            - col_names: list of column names from the CSV file
 
             Returns None if there are any errors reading the file.
 
         """
         try:
             df = pd.read_csv(filename)
-            x = df["x"].to_numpy()  # Convert to numpy array
-            dx = df["dx"].to_numpy()
-            y = df["y"].to_numpy()
-            dy = df["dy"].to_numpy()
-            return x, dx, y, dy
+
+            # Check if file has exactly 4 columns
+            if len(df.columns) != 4:
+                print(f"Error: File must have exactly 4 columns, found {len(df.columns)}")
+                return None
+
+            # Use columns by position rather than name for flexibility
+            col_names = df.columns.tolist()
+            x = df[col_names[0]].to_numpy()   # First column: independent variable
+            dx = df[col_names[1]].to_numpy()  # Second column: independent uncertainty
+            y = df[col_names[2]].to_numpy()   # Third column: dependent variable
+            dy = df[col_names[3]].to_numpy()  # Fourth column: dependent uncertainty
+
+            return x, dx, y, dy, col_names
         except Exception as e:
             print(f"Error reading file: {e}")
             return None
@@ -233,37 +244,38 @@ def load_data_from_input(input_filename, mo, pd, read_data):
             # Load the specified file
             file_data = read_data(input_filename.value)
             if file_data is not None:
-                x, dx, y, dy = file_data
+                x, dx, y, dy, col_names = file_data
 
-                # Create DataFrame for display with logical column order
+                # Create DataFrame for display with actual column names
                 data_df = pd.DataFrame({
-                    'x': x,
-                    'dx': dx,
-                    'y': y,
-                    'dy': dy
+                    col_names[0]: x,
+                    col_names[1]: dx,
+                    col_names[2]: y,
+                    col_names[3]: dy
                 })
 
-                # Show success message
+                # Show success message with actual column names
                 mo.md(f"""
                 ## ✅ Data Loaded Successfully
 
                 **File:** {input_filename.value}
                 **Rows:** {len(x)} data points
+                **Columns:** {', '.join(col_names)}
 
-                **🟢 First values:** X={x[0]:.3f}, Y={y[0]:.3f}
-                **🟢 Data range:** X=[{min(x):.2f}, {max(x):.2f}], Y=[{min(y):.2f}, {max(y):.2f}]
+                **🟢 First values:** {col_names[0]}={x[0]:.3f}, {col_names[2]}={y[0]:.3f}
+                **🟢 Data range:** {col_names[0]}=[{min(x):.2f}, {max(x):.2f}], {col_names[2]}=[{min(y):.2f}, {max(y):.2f}]
                 """)
 
             else:
                 mo.md(f"❌ Could not load {input_filename.value} - make sure the file exists")
-                data_df, dx, dy, x, y = None, None, None, None, None
+                data_df, dx, dy, x, y, col_names = None, None, None, None, None, None
         except Exception as e:
             mo.md(f"❌ Error loading {input_filename.value}: {e}")
-            data_df, dx, dy, x, y = None, None, None, None, None
+            data_df, dx, dy, x, y, col_names = None, None, None, None, None, None
     else:
         mo.md("💡 Please enter a CSV filename to load data")
-        data_df, dx, dy, x, y = None, None, None, None, None
-    return data_df, dx, dy, x, y
+        data_df, dx, dy, x, y, col_names = None, None, None, None, None, None
+    return data_df, dx, dy, x, y, col_names
 
 
 @app.cell
@@ -296,9 +308,9 @@ def display_data_explorer(data_df, mo):
 
 
 @app.cell
-def perform_linear_odr(dx, dy, linear_func, mo, perform_odr, x, y):
+def perform_linear_odr(col_names, dx, dy, linear_func, mo, perform_odr, x, y):
     """Perform ODR analysis on the data."""
-    if x is not None and y is not None:
+    if x is not None and y is not None and col_names is not None:
         # Perform ODR analysis using the same approach as CLI version
         results, chi_square, degrees_freedom, chi_square_reduced, p_value = perform_odr(
             x, dx, y, dy, linear_func, [1.0, 0.0]
@@ -307,11 +319,14 @@ def perform_linear_odr(dx, dy, linear_func, mo, perform_odr, x, y):
         slope_odr, intercept_odr = results.beta
         slope_err, intercept_err = results.sd_beta
 
+        # Use actual column names in the display
+        _x_name, _y_name = col_names[0], col_names[2]
+
         mo.md(f"""
         ## ODR Analysis Results
 
         **Fitted Parameters:**
-        - Slope: `{slope_odr:.4f} ± {slope_err:.4f}`
+        - Slope (d{_y_name}/d{_x_name}): `{slope_odr:.4f} ± {slope_err:.4f}`
         - Intercept: `{intercept_odr:.4f} ± {intercept_err:.4f}`
 
         **Goodness of Fit:**
@@ -331,7 +346,7 @@ def perform_linear_odr(dx, dy, linear_func, mo, perform_odr, x, y):
 
 
 @app.cell
-def plot_fit_results(dx, dy, linear_func, np, plt, results, x, y):
+def plot_fit_results(col_names, dx, dy, linear_func, np, plt, results, x, y):
     """Create and display plot of data points with error bars and fit line."""
     # This mirrors the plot_fit function from the CLI version
     fig, ax = plt.subplots(figsize=(10, 8))
@@ -353,8 +368,13 @@ def plot_fit_results(dx, dy, linear_func, np, plt, results, x, y):
     y_fit = linear_func(results.beta, x_fit)
     ax.plot(x_fit, y_fit, 'r-', linewidth=2, label='Fit')
 
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
+    # Use actual column names for labels if available, fallback to X/Y
+    if col_names is not None:
+        ax.set_xlabel(col_names[0])
+        ax.set_ylabel(col_names[2])
+    else:
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y')
     ax.set_title('ODR Fit with Uncertainties')
     ax.legend()
     ax.grid(True)
@@ -365,7 +385,7 @@ def plot_fit_results(dx, dy, linear_func, np, plt, results, x, y):
 
 
 @app.cell
-def plot_residuals_analysis(dx, dy, linear_func, np, plt, results, x, y):
+def plot_residuals_analysis(col_names, dx, dy, linear_func, np, plt, results, x, y):
     """Generate and display residuals plot for the linear fit."""
     # This mirrors the plot_residuals function from the CLI version
     fig_resid, ax_resid = plt.subplots(figsize=(10, 6))
@@ -382,8 +402,14 @@ def plot_residuals_analysis(dx, dy, linear_func, np, plt, results, x, y):
 
     ax_resid.errorbar(x, residuals, yerr=total_uncertainty, fmt=_marker_resid, alpha=0.7)
     ax_resid.axhline(y=0, color='r', linestyle='-')
-    ax_resid.set_xlabel('X')
-    ax_resid.set_ylabel('Residuals')
+
+    # Use actual column names for labels if available, fallback to X/Y
+    if col_names is not None:
+        ax_resid.set_xlabel(col_names[0])
+        ax_resid.set_ylabel(f'Residuals ({col_names[2]})')
+    else:
+        ax_resid.set_xlabel('X')
+        ax_resid.set_ylabel('Residuals')
     ax_resid.set_title('Residuals')
     ax_resid.grid(True)
 
@@ -448,7 +474,7 @@ def plotting_utilities(Axes, Ellipse, Patch, np, transforms):
 
 
 @app.cell
-def plot_correlation_ellipses(confidence_ellipse, np, plt, results):
+def plot_correlation_ellipses(col_names, confidence_ellipse, np, plt, results):
     """Create and display plot showing parameter correlation ellipses."""
     # This mirrors the plot_ellipses function from the CLI version
     fig_ellipse, ax_ellipse = plt.subplots(figsize=(10, 8))
@@ -474,7 +500,12 @@ def plot_correlation_ellipses(confidence_ellipse, np, plt, results):
         results.beta[0], results.beta[1], "r*", label="Best fit", markersize=10
     )
 
-    ax_ellipse.set_xlabel("Slope (m)")
+    # Use actual column names for labels if available, fallback to generic labels
+    if col_names is not None:
+        _x_name, _y_name = col_names[0], col_names[2]
+        ax_ellipse.set_xlabel(f"Slope (d{_y_name}/d{_x_name})")
+    else:
+        ax_ellipse.set_xlabel("Slope (m)")
     ax_ellipse.set_ylabel("Intercept (b)")
     ax_ellipse.set_title("Parameter Correlation Ellipses")
     ax_ellipse.legend()
