@@ -418,11 +418,12 @@ def plot_residuals_analysis(col_names, dx, dy, linear_func, np, plt, results, x,
     # Use actual column names for labels if available, fallback to X/Y
     if col_names is not None:
         ax_resid.set_xlabel(col_names[0])
-        ax_resid.set_ylabel(f'Residuals ({col_names[2]})')
+        ax_resid.set_ylabel(f'{col_names[2]} residuals')
+        ax_resid.set_title(f'{col_names[2]} residuals vs {col_names[0]}')
     else:
         ax_resid.set_xlabel('X')
-        ax_resid.set_ylabel('Residuals')
-    ax_resid.set_title('Residuals')
+        ax_resid.set_ylabel('Y residuals')
+        ax_resid.set_title('Y residuals vs X')
     ax_resid.grid(True)
 
     plt.tight_layout()
@@ -458,12 +459,13 @@ def plot_xy_residuals_analysis(col_names, dx, dy, linear_func, np, plt, results,
 
     # Use actual column names for labels if available, fallback to X/Y
     if col_names is not None:
-        ax_xy_resid.set_xlabel(f'X-Residuals ({col_names[0]})')
-        ax_xy_resid.set_ylabel(f'{col_names[2]}')
+        ax_xy_resid.set_xlabel(f'{col_names[0]} residuals')
+        ax_xy_resid.set_ylabel(col_names[2])
+        ax_xy_resid.set_title(f'{col_names[2]} vs {col_names[0]} residuals')
     else:
-        ax_xy_resid.set_xlabel('X-Residuals')
+        ax_xy_resid.set_xlabel('X residuals')
         ax_xy_resid.set_ylabel('Y')
-    ax_xy_resid.set_title('X-Residuals vs Y Values')
+        ax_xy_resid.set_title('Y vs X residuals')
     ax_xy_resid.grid(True)
 
     plt.tight_layout()
@@ -563,9 +565,10 @@ def plot_correlation_ellipses(col_names, confidence_ellipse, np, plt, results):
     if col_names is not None:
         _x_name, _y_name = col_names[0], col_names[2]
         ax_ellipse.set_xlabel(f"Slope (d{_y_name}/d{_x_name})")
+        ax_ellipse.set_ylabel(f"{_y_name} intercept: {_y_name}({_x_name}=0)")
     else:
         ax_ellipse.set_xlabel("Slope (m)")
-    ax_ellipse.set_ylabel("Intercept (b)")
+        ax_ellipse.set_ylabel("Y intercept: Y(X=0)")
     ax_ellipse.set_title("Parameter Correlation Ellipses")
     ax_ellipse.legend()
     ax_ellipse.grid(True)
