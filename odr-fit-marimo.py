@@ -346,6 +346,12 @@ def perform_linear_odr(col_names, dx, dy, linear_func, mo, perform_odr, x, y):
 
 
 @app.cell
+def _(mo):
+    mo.md("---")
+    return
+
+
+@app.cell
 def plot_fit_results(col_names, dx, dy, linear_func, np, plt, results, x, y):
     """Create and display plot of data points with error bars and fit line."""
     # This mirrors the plot_fit function from the CLI version
@@ -385,13 +391,19 @@ def plot_fit_results(col_names, dx, dy, linear_func, np, plt, results, x, y):
 
 
 @app.cell
+def _(mo):
+    mo.md("---")
+    return
+
+
+@app.cell
 def plot_residuals_analysis(col_names, dx, dy, linear_func, np, plt, results, x, y):
     """Generate and display residuals plot for the linear fit."""
     # This mirrors the plot_residuals function from the CLI version
     fig_resid, ax_resid = plt.subplots(figsize=(10, 6))
 
-    y_model = linear_func(results.beta, x)
-    residuals = y - y_model
+    _y_model = linear_func(results.beta, x)
+    residuals = y - _y_model
     total_uncertainty = np.sqrt(dy**2 + (results.beta[0] * dx) ** 2)
 
     # Determine if error bars are visible (same logic as CLI version)
@@ -415,6 +427,47 @@ def plot_residuals_analysis(col_names, dx, dy, linear_func, np, plt, results, x,
 
     plt.tight_layout()
     ax_resid
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md("---")
+    return
+
+
+@app.cell
+def plot_xy_residuals_analysis(col_names, dx, dy, linear_func, np, plt, results, x, y):
+    """Generate and display x-residuals vs raw y values plot."""
+    # For ODR, x-residuals are calculated from the orthogonal projection
+    slope = results.beta[0]
+    intercept = results.beta[1]
+
+    # Calculate x-residuals using proper orthogonal projection formula
+    # The closest point on the line y = mx + b to point (x_i, y_i) is:
+    x_model = (x + slope * (y - intercept)) / (1 + slope**2)
+    x_residuals = x - x_model
+
+    fig_xy_resid, ax_xy_resid = plt.subplots(figsize=(10, 8))
+
+    # Plot x-residuals vs raw y values with x error bars only
+    ax_xy_resid.errorbar(x_residuals, y, xerr=dx, fmt='o', alpha=0.7)
+
+    # Add reference line at x=0 (zero x-residuals)
+    ax_xy_resid.axvline(x=0, color='r', linestyle='-', alpha=0.5)
+
+    # Use actual column names for labels if available, fallback to X/Y
+    if col_names is not None:
+        ax_xy_resid.set_xlabel(f'X-Residuals ({col_names[0]})')
+        ax_xy_resid.set_ylabel(f'{col_names[2]}')
+    else:
+        ax_xy_resid.set_xlabel('X-Residuals')
+        ax_xy_resid.set_ylabel('Y')
+    ax_xy_resid.set_title('X-Residuals vs Y Values')
+    ax_xy_resid.grid(True)
+
+    plt.tight_layout()
+    ax_xy_resid
     return
 
 
@@ -471,6 +524,12 @@ def plotting_utilities(Axes, Ellipse, Patch, np, transforms):
         ellipse.set_transform(transf + ax.transData)
         return ax.add_patch(ellipse)
     return (confidence_ellipse,)
+
+
+@app.cell
+def _(mo):
+    mo.md("---")
+    return
 
 
 @app.cell
