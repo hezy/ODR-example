@@ -12,7 +12,7 @@ real-time visualization and educational content.
 
 import marimo
 
-__generated_with = "0.16.1"
+__generated_with = "0.16.2"
 app = marimo.App(width="medium")
 
 
@@ -40,7 +40,6 @@ def imports():
         pd,
         plt,
         stats,
-        sys,
         transforms,
     )
 
@@ -142,7 +141,7 @@ def model_functions(np):
 
         """
         return p[0] + p[1] * x + p[2] * x**2
-    return (linear_func, parabolic_func)
+    return (linear_func,)
 
 
 @app.cell
@@ -205,44 +204,85 @@ def odr_analysis_functions(Callable, np, odr, stats):
     return (perform_odr,)
 
 
+@app.cell
+def file_input_ui(mo):
+    """Create file input UI element."""
+    # File I/O example - matches the default from CLI version
+    input_filename = mo.ui.text(
+        value="data.csv",
+        label="Input CSV filename (same format as CLI version):",
+        full_width=False
+    )
+
+    mo.md("### File Input")
+    return (input_filename,)
 
 
 @app.cell
-def load_default_data(mo, pd, read_data):
-    """Load the default CSV file for analysis."""
-    try:
-        # Load the default data.csv file
-        file_data = read_data("data.csv")
-        if file_data is not None:
-            x, dx, y, dy = file_data
+def display_filename_input(input_filename):
+    """Display the filename input widget."""
+    input_filename
+    return
 
-            # Create DataFrame for display
-            data_df = pd.DataFrame({
-                'x': x,
-                'y': y,
-                'dx': dx,
-                'dy': dy
-            })
 
-            mo.md(f"""
-            ## Data Loaded Successfully
+@app.cell
+def load_data_from_input(input_filename, mo, pd, read_data):
+    """Load data from the specified input file."""
+    if input_filename.value:
+        try:
+            # Load the specified file
+            file_data = read_data(input_filename.value)
+            if file_data is not None:
+                x, dx, y, dy = file_data
 
-            Loaded {len(x)} data points from 'data.csv':
-            - X range: [{min(x):.2f}, {max(x):.2f}]
-            - Y range: [{min(y):.2f}, {max(y):.2f}]
-            - Average X uncertainty: {dx.mean():.3f}
-            - Average Y uncertainty: {dy.mean():.3f}
+                # Create DataFrame for display with logical column order
+                data_df = pd.DataFrame({
+                    'x': x,
+                    'dx': dx,
+                    'y': y,
+                    'dy': dy
+                })
 
-            This uses the same data loading as the CLI version.
-            """)
-        else:
-            mo.md("❌ Could not load data.csv - make sure the file exists")
+                # Show success message
+                mo.md(f"""
+                ## ✅ Data Loaded Successfully
+
+                **File:** {input_filename.value}
+                **Rows:** {len(x)} data points
+
+                **🟢 First values:** X={x[0]:.3f}, Y={y[0]:.3f}
+                **🟢 Data range:** X=[{min(x):.2f}, {max(x):.2f}], Y=[{min(y):.2f}, {max(y):.2f}]
+                """)
+
+            else:
+                mo.md(f"❌ Could not load {input_filename.value} - make sure the file exists")
+                data_df, dx, dy, x, y = None, None, None, None, None
+        except Exception as e:
+            mo.md(f"❌ Error loading {input_filename.value}: {e}")
             data_df, dx, dy, x, y = None, None, None, None, None
-    except Exception as e:
-        mo.md(f"❌ Error loading data.csv: {e}")
+    else:
+        mo.md("💡 Please enter a CSV filename to load data")
         data_df, dx, dy, x, y = None, None, None, None, None
-
     return data_df, dx, dy, x, y
+
+
+@app.cell
+def show_csv_table(data_df):
+    """Simply display the CSV data as a table."""
+    data_df
+    return
+
+
+@app.cell
+def display_loaded_data(data_df, mo):
+    """Display the loaded CSV data for user examination."""
+    mo.md("## Loaded CSV Data")
+    if data_df is not None:
+        mo.md(f"**Data shape:** {data_df.shape[0]} rows × {data_df.shape[1]} columns")
+        data_df
+    else:
+        mo.md("*No data loaded yet - please enter a filename above*")
+    return
 
 
 @app.cell
@@ -256,15 +296,7 @@ def display_data_explorer(data_df, mo):
 
 
 @app.cell
-def perform_linear_odr(
-    dx,
-    dy,
-    linear_func,
-    mo,
-    perform_odr,
-    x,
-    y,
-):
+def perform_linear_odr(dx, dy, linear_func, mo, perform_odr, x, y):
     """Perform ODR analysis on the data."""
     if x is not None and y is not None:
         # Perform ODR analysis using the same approach as CLI version
@@ -295,7 +327,6 @@ def perform_linear_odr(
     else:
         mo.md("*ODR analysis results will appear when data is loaded*")
         chi_square, chi_square_reduced, degrees_freedom, p_value, results = None, None, None, None, None
-
     return chi_square, chi_square_reduced, degrees_freedom, p_value, results
 
 
@@ -537,104 +568,6 @@ def utility_functions_and_results(
 
     {"The model is **consistent** with the data" if p_value > 0.05 else "The model may be **inconsistent** with the data"} (p = {p_value:.4f})
     """)
-    return (format_matrix,)
-
-
-@app.cell
-def file_io_section(mo):
-    """Introduction to file I/O capabilities."""
-    mo.md(
-        """
-    ## File I/O Functions
-
-    The original CLI script includes functionality to read data from CSV files and save results.
-    This marimo version can also read CSV files with the same format expected by the CLI version:
-    - Column 'x': x coordinates
-    - Column 'dx': x uncertainties
-    - Column 'y': y coordinates
-    - Column 'dy': y uncertainties
-    """
-    )
-    return
-
-
-@app.cell
-def file_input_ui(mo):
-    """Create file input UI element."""
-    # File I/O example - matches the default from CLI version
-    input_filename = mo.ui.text(
-        value="data.csv",
-        label="Input CSV filename (same format as CLI version):",
-        full_width=False
-    )
-
-    mo.md("### File Input")
-    return (input_filename,)
-
-
-@app.cell
-def display_filename_input(input_filename):
-    """Display the filename input widget."""
-    input_filename
-    return
-
-
-@app.cell
-def handle_file_input(input_filename, mo, read_data):
-    """Handle file input and provide feedback."""
-    # Optional: Try to read from file if it exists (matches CLI behavior)
-    if input_filename.value and input_filename.value != "data.csv":
-        try:
-            _file_data = read_data(input_filename.value)
-            if _file_data is not None:
-                x_file, dx_file, y_file, dy_file = _file_data
-                mo.md(f"""
-                ✅ **Successfully loaded data from {input_filename.value}**
-                - Number of points: {len(x_file)}
-                - X range: [{min(x_file):.2f}, {max(x_file):.2f}]
-                - Y range: [{min(y_file):.2f}, {max(y_file):.2f}]
-
-                *This data would be processed the same way as in the CLI version.*
-                """)
-            else:
-                mo.md(f"❌ **Could not read file: {input_filename.value}**")
-        except Exception as e:
-            mo.md(f"❌ **Error reading file**: {str(e)}")
-    else:
-        mo.md("💡 **Enter a CSV filename above to load data** (same format as CLI version)")
-    return
-
-
-@app.cell
-def summary_section(mo):
-    """Provide summary of capabilities."""
-    mo.md(
-        """
-    ## Summary
-
-    This marimo notebook demonstrates the same ODR analysis capabilities as the CLI version:
-
-    1. **Data Loading**: CSV file input with same format as CLI version
-    2. **ODR Analysis**: Same `perform_odr()` function with identical statistical calculations
-    3. **Visualization**: Same plotting logic as CLI version but with inline display
-    4. **Results**: Same detailed statistics and goodness-of-fit metrics
-    5. **Educational Enhancement**: Interactive exploration of ODR analysis
-
-    ### Key Similarities with CLI Version:
-    - Identical core analysis functions (`read_data`, `perform_odr`, `confidence_ellipse`, etc.)
-    - Same statistical calculations and goodness-of-fit tests
-    - Same plotting logic (error bar visibility, axis labels, etc.)
-    - Same result formatting and covariance matrix display
-
-    ### Marimo Enhancements:
-    - Interactive data exploration
-    - Inline plot display
-    - Educational markdown documentation
-
-    The ODR method is particularly valuable when both x and y measurements have significant uncertainties,
-    providing more accurate parameter estimates than standard least-squares regression.
-    """
-    )
     return
 
 
