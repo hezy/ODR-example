@@ -11,6 +11,9 @@ dependencies = [
     "marimo>=0.16.0",
 ]
 
+[project.optional-dependencies]
+dev = ["pandas-stubs", "types-pytz"]
+
 [tool.ruff]
 # Enable specific rule sets
 lint.select = [
