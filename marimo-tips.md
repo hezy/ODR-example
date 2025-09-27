@@ -183,6 +183,96 @@ def plot_with_dynamic_labels(x, y, col_names, plt):
 - Consider breaking expensive operations into separate cells to limit re-computation
 - Use caching strategies for heavy data processing when appropriate
 
+## Variable Naming Conflicts
+
+### Avoiding Variable Naming Conflicts
+Marimo requires unique variable names across all cells. Use private variables (underscore prefix) for temporary calculations:
+
+```python
+# ❌ Wrong: Same variable name in multiple cells
+@app.cell
+def plot_residuals():
+    y_model = linear_func(results.beta, x)  # Conflicts with other cells
+    return
+
+# ✅ Correct: Use private variables for internal calculations
+@app.cell
+def plot_residuals():
+    _y_model = linear_func(results.beta, x)  # Private, no conflict
+    return
+```
+
+## Visual Layout and Spacing
+
+### Adding Visual Separation Between Plots
+Use empty markdown cells with horizontal rules to add spacing between plot sections:
+
+```python
+@app.cell
+def _(mo):
+    mo.md("---")
+    return
+
+@app.cell
+def next_plot():
+    # Your plot code here
+    return
+```
+
+## Dynamic Content and Labels
+
+### Descriptive Plot Titles Using Dynamic Data
+Create informative plot titles and axis labels using actual column names from your data:
+
+```python
+@app.cell
+def plot_with_dynamic_titles(col_names, plt):
+    # Use actual column names for better context
+    if col_names is not None:
+        ax.set_title(f'{col_names[2]} residuals vs {col_names[0]}')
+        ax.set_ylabel(f'{col_names[2]} residuals')
+        ax.set_xlabel(f'{col_names[0]}')
+    else:
+        # Fallback to generic labels
+        ax.set_title('Y residuals vs X')
+    return
+```
+
+## Scientific Plotting Best Practices
+
+### Creating Professional Scientific Plots
+When creating scientific analysis plots:
+
+```python
+@app.cell
+def scientific_plot_example(col_names, plt):
+    fig, ax = plt.subplots()
+
+    # Use descriptive mathematical notation in labels
+    if col_names is not None:
+        x_name, y_name = col_names[0], col_names[2]
+        ax.set_xlabel(f"Slope (d{y_name}/d{x_name})")
+        ax.set_ylabel(f"{y_name} intercept: {y_name}({x_name}=0)")
+
+    # Show appropriate error bars (only x-uncertainties in this case)
+    ax.errorbar(x_residuals, y, xerr=dx, fmt='o', alpha=0.7)
+
+    # Add reference lines for better interpretation
+    ax.axhline(y=0, color='r', linestyle='-', alpha=0.5)
+    ax.axvline(x=0, color='r', linestyle='-', alpha=0.5)
+
+    ax.grid(True)
+    ax
+    return
+```
+
+Key scientific plotting principles:
+- Include units and context in labels
+- Use mathematical notation where appropriate
+- Show only relevant error bars (don't clutter with unnecessary uncertainties)
+- Add reference lines (zero lines, expected values) for easier interpretation
+- Use consistent styling across related plots
+
 ---
 
 *These tips were compiled from practical experience debugging marimo plotting issues and understanding the reactive cell system.*
