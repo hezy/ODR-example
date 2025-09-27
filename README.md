@@ -5,7 +5,7 @@ This educational project provides two complementary implementations of Orthogona
 1. **`odr-fit.py`** - Command-line script for batch processing
 2. **`odr-fit-marimo.py`** - Interactive marimo notebook for educational exploration
 
-Both implementations share identical core analysis functions and produce equivalent statistical results, making them perfect for learning how the same scientific computation can be applied in different contexts.
+Both implementations share identical core analysis functions and produce equivalent statistical results.
 
 ## Features
 
@@ -29,7 +29,6 @@ Both implementations share identical core analysis functions and produce equival
 ### Interactive Notebook Version (`odr-fit-marimo.py`)
 - Live, interactive exploration with marimo
 - Real-time visualization updates
-- Educational enhancements with synthetic data generation
 - Inline documentation explaining each analysis step
 - Direct comparison with known true parameter values
 
@@ -73,8 +72,7 @@ uv run --with marimo marimo run odr-fit-marimo.py
 ```
 
 2. Your web browser will automatically open to the interactive notebook interface where you can:
-   - Explore synthetic data with known parameters for validation
-   - Upload and analyze your own CSV files (same format as CLI version)
+   - Upload and analyze your CSV files (same format as CLI version)
    - See real-time comparison between fitted and true parameter values
    - Understand each analysis step through educational documentation
    - View the same plots and statistics as the CLI version, but inline
@@ -147,20 +145,11 @@ The marimo version displays the same statistical information interactively with 
 ![residuals plot](https://github.com/hezy/ODR-example/blob/main/residuals_plot.png?raw=true)
 ![correlation ellipses](https://github.com/hezy/ODR-example/blob/main/correlation_ellipses.png?raw=true)
 
-## Educational Approach and Best Practices
-
-### Learning with Both Versions
-- **Start with the marimo notebook** to understand the analysis interactively
-- **Use the CLI version** for processing your own datasets
-- **Compare the source code** to see how the same analysis works in different contexts
-- **Note the identical core functions** across both implementations
-
-### Analysis Best Practices (Both Versions)
+## Analysis Best Practices (Both Versions)
 - Verify your uncertainties before analysis
 - Review the residuals plot to assess fit quality
 - Use the p-value and reduced chi-square to evaluate goodness-of-fit
 - Check the correlation ellipses to understand parameter interdependencies
-- Compare results between synthetic and real data to build intuition
 
 ## Troubleshooting
 
@@ -186,9 +175,7 @@ Both versions provide clear error messages for:
 - Missing required CSV columns
 - Invalid data values (negative uncertainties, NaN values)
 
-## Similar Tools and Alternatives
-
-For comparison with other fitting tools:
+## Alternative tools:
 
 - [EddingtonGUI](https://github.com/EddLabs/eddington-gui): GUI-based curve fitting with uncertainties
 - [Fityk](https://fityk.nieto.pl/): Professional curve fitting with both CLI and GUI interfaces
