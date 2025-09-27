@@ -275,7 +275,7 @@ def load_data_from_input(input_filename, mo, pd, read_data):
     else:
         mo.md("💡 Please enter a CSV filename to load data")
         data_df, dx, dy, x, y, col_names = None, None, None, None, None, None
-    return data_df, dx, dy, x, y, col_names
+    return col_names, data_df, dx, dy, x, y
 
 
 @app.cell
@@ -347,7 +347,7 @@ def perform_linear_odr(col_names, dx, dy, linear_func, mo, perform_odr, x, y):
 
 @app.cell
 def _(mo):
-    mo.md("---")
+    mo.md("""---""")
     return
 
 
@@ -392,12 +392,22 @@ def plot_fit_results(col_names, dx, dy, linear_func, np, plt, results, x, y):
 
 @app.cell
 def _(mo):
-    mo.md("---")
+    mo.md("""---""")
     return
 
 
 @app.cell
-def plot_residuals_analysis(col_names, dx, dy, linear_func, np, plt, results, x, y):
+def plot_residuals_analysis(
+    col_names,
+    dx,
+    dy,
+    linear_func,
+    np,
+    plt,
+    results,
+    x,
+    y,
+):
     """Generate and display residuals plot for the linear fit."""
     # This mirrors the plot_residuals function from the CLI version
     fig_resid, ax_resid = plt.subplots(figsize=(10, 6))
@@ -433,12 +443,12 @@ def plot_residuals_analysis(col_names, dx, dy, linear_func, np, plt, results, x,
 
 @app.cell
 def _(mo):
-    mo.md("---")
+    mo.md("""---""")
     return
 
 
 @app.cell
-def plot_xy_residuals_analysis(col_names, dx, dy, linear_func, np, plt, results, x, y):
+def plot_xy_residuals_analysis(col_names, dx, plt, results, x, y):
     """Generate and display x-residuals vs raw y values plot."""
     # For ODR, x-residuals are calculated from the orthogonal projection
     slope = results.beta[0]
@@ -530,7 +540,7 @@ def plotting_utilities(Axes, Ellipse, Patch, np, transforms):
 
 @app.cell
 def _(mo):
-    mo.md("---")
+    mo.md("""---""")
     return
 
 
