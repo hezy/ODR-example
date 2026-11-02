@@ -1,12 +1,12 @@
 Regression Results:
 -----------------
-Slope: 2.147160 ± 0.016329
-Intercept: -0.359676 ± 0.137575
+Slope: 2.147160 ± 0.015394
+Intercept: -0.359676 ± 0.129695
 
 Covariance matrix:
  2.369614e-04 -1.720236e-03
 -1.720236e-03  1.682069e-02
-Pearson's Correlation coefficient: -0.765757
+Pearson's Correlation coefficient: -0.861643
 
 Chi-square: 14.627831
 Degrees of freedom: 13

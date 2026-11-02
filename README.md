@@ -125,13 +125,13 @@ Running either version with the provided example data will produce equivalent st
 ```
 Regression Results:
 -----------------
-Slope: 2.147160 ± 0.016329
-Intercept: -0.359677 ± 0.137575
+Slope: 2.147160 ± 0.015394
+Intercept: -0.359676 ± 0.129695
 
 Covariance matrix:
- 2.369639e-04 -1.720251e-03
--1.720251e-03  1.682074e-02
-Pearson's Correlation coefficient: -0.765758
+ 2.369614e-04 -1.720236e-03
+-1.720236e-03  1.682069e-02
+Pearson's Correlation coefficient: -0.861643
 
 Chi-square: 14.627831
 Degrees of freedom: 13

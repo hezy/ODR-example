@@ -462,9 +462,9 @@ def plot_ellipses(results: odr.Output, save_path: str) -> None:
     Notes
     -----
     The confidence levels correspond to the following chi-squared values:
-    - 1σ: χ² = 2.30 (39.3% confidence)
-    - 2σ: χ² = 6.18 (95.4% confidence)
-    - 3σ: χ² = 11.83 (99.7% confidence)
+    - 1σ: Δχ² = 2.30 (68.3% confidence)
+    - 2σ: Δχ² = 6.18 (95.4% confidence)
+    - 3σ: Δχ² = 11.83 (99.7% confidence)
 
     The best-fit point is marked with a red star on the plot.
 
@@ -475,7 +475,7 @@ def plot_ellipses(results: odr.Output, save_path: str) -> None:
     ax = plt.gca()
 
     confidence_data = [
-        (2.30, "1σ (39.3%)", "red"),
+        (2.30, "1σ (68.3%)", "red"),
         (6.18, "2σ (95.4%)", "green"),
         (11.83, "3σ (99.7%)", "blue"),
     ]
@@ -564,15 +564,16 @@ def main() -> None:
     with open("fit_results.txt", "w") as f:
         f.write("Regression Results:\n")
         f.write("-----------------\n")
-        f.write(f"Slope: {results.beta[0]:.6f} ± {results.sd_beta[0]:.6f}\n")
-        f.write(
-            f"Intercept: {results.beta[1]:.6f} ± {results.sd_beta[1]:.6f}\n"
-        )
+        # Parameter errors from the error bars alone: sqrt of the diagonal of
+        # cov_beta. results.sd_beta is not used, because scipy.odr multiplies it
+        # by sqrt(reduced chi-square); the reduced chi-square is a check on the
+        # error bars, not a correction to them.
+        errors = np.sqrt(np.diag(results.cov_beta))
+        f.write(f"Slope: {results.beta[0]:.6f} ± {errors[0]:.6f}\n")
+        f.write(f"Intercept: {results.beta[1]:.6f} ± {errors[1]:.6f}\n")
         f.write("\nCovariance matrix:")
         f.write(f"\n{format_matrix(results.cov_beta)}")
-        correlation = results.cov_beta[0, 1] / (
-            results.sd_beta[0] * results.sd_beta[1]
-        )
+        correlation = results.cov_beta[0, 1] / (errors[0] * errors[1])
         f.write(f"\nPearson's Correlation coefficient: {correlation:.6f}\n")
         f.write(f"\nChi-square: {chi_square:.6f}\n")
         f.write(f"Degrees of freedom: {degrees_freedom}\n")
