@@ -317,7 +317,10 @@ def perform_linear_odr(col_names, dx, dy, linear_func, mo, perform_odr, x, y):
         )
 
         slope_odr, intercept_odr = results.beta
-        slope_err, intercept_err = results.sd_beta
+        # Errors from the error bars alone: sqrt of the diagonal of cov_beta.
+        # results.sd_beta is scaled by sqrt(reduced chi-square) and is not used.
+        slope_err, intercept_err = (results.cov_beta[0, 0] ** 0.5,
+                                    results.cov_beta[1, 1] ** 0.5)
 
         # Use actual column names in the display
         _x_name, _y_name = col_names[0], col_names[2]
@@ -551,7 +554,7 @@ def plot_correlation_ellipses(col_names, confidence_ellipse, np, plt, results):
     fig_ellipse, ax_ellipse = plt.subplots(figsize=(10, 8))
 
     confidence_data = [
-        (2.30, "1σ (39.3%)", "red"),  # Corrected percentages to match CLI
+        (2.30, "1σ (68.3%)", "red"),
         (6.18, "2σ (95.4%)", "green"),
         (11.83, "3σ (99.7%)", "blue"),
     ]
@@ -642,7 +645,8 @@ def utility_functions_and_results(
         return "\n".join(formatted_rows)
 
     # Display detailed results (mirrors the CLI version output format)
-    correlation = results.cov_beta[0, 1] / (results.sd_beta[0] * results.sd_beta[1])
+    _errors = np.sqrt(np.diag(results.cov_beta))  # not sd_beta, see the ODR cell
+    correlation = results.cov_beta[0, 1] / (_errors[0] * _errors[1])
 
     mo.md(f"""
     ## Detailed Analysis Results
@@ -650,8 +654,8 @@ def utility_functions_and_results(
     This section mirrors the output that would be saved to 'fit_results.txt' in the CLI version.
 
     ### Regression Results
-    - **Slope**: {results.beta[0]:.6f} ± {results.sd_beta[0]:.6f}
-    - **Intercept**: {results.beta[1]:.6f} ± {results.sd_beta[1]:.6f}
+    - **Slope**: {results.beta[0]:.6f} ± {_errors[0]:.6f}
+    - **Intercept**: {results.beta[1]:.6f} ± {_errors[1]:.6f}
 
     ### Covariance Matrix
     ```
